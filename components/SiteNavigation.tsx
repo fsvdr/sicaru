@@ -1,7 +1,6 @@
 'use client';
 
 import cn from '@utils/cn';
-import { motion } from 'framer-motion';
 import { ShoppingBasket, Store, Utensils } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -25,8 +24,6 @@ const SiteNavigation = () => {
 
 export default SiteNavigation;
 
-const AnimatedLink = motion(Link);
-
 const NavLink = ({
   path,
   activePathname,
@@ -39,8 +36,7 @@ const NavLink = ({
   label: string;
 }) => {
   return (
-    <AnimatedLink
-      layout
+    <Link
       href={path}
       className={cn('flex flex-col items-center gap-0.5 text-xs font-semibold', {
         '': activePathname === path,
@@ -49,6 +45,6 @@ const NavLink = ({
       {icon}
 
       <span className="opacity-70">{label}</span>
-    </AnimatedLink>
+    </Link>
   );
 };
