@@ -1,8 +1,5 @@
 'use client';
 
-import AppleLogo from '@assets/icons/logo-apple.svg';
-import GoogleLogo from '@assets/icons/logo-google.svg';
-import Button from '@components/generic/Button';
 import {
   Form,
   FormControl,
@@ -47,7 +44,7 @@ const SignUpPage = () => {
           </header>
 
           <div className="flex flex-col gap-4">
-            <fieldset className="grid items-center grid-cols-2 gap-2">
+            {/* <fieldset className="grid items-center grid-cols-2 gap-2">
               <Button type="button">
                 <GoogleLogo className="w-4" />
                 Google
@@ -61,7 +58,7 @@ const SignUpPage = () => {
 
             <div className="relative flex items-center justify-center before:absolute before:inset-0 before:m-auto before:h-px before:w-full before:bg-slate-200">
               <p className="relative inline-block px-2 m-auto text-xs bg-white w-max">O entra con tu correo</p>
-            </div>
+            </div> */}
 
             <fieldset className="grid grid-cols-2 gap-2">
               <FormField
