@@ -14,7 +14,7 @@ if (!process.env.TURSO_GROUP_AUTH_TOKEN) {
 
 const config = defineConfig({
   out: './db/migrations',
-  schema: './db/schema.ts',
+  schema: './db/schema',
   dialect: 'turso',
   dbCredentials: {
     url: `libsql://${process.env.TURSO_DATABASE_NAME}-${process.env.TURSO_ORG}.turso.io`,
