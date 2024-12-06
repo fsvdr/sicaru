@@ -59,7 +59,7 @@ const AppSidebar = async () => {
   const user = session!.user;
 
   return (
-    <Sidebar>
+    <Sidebar collapsible="icon">
       <SidebarHeader>
         <StoreSwitcher stores={[{ id: '1', name: 'Sicaru', slug: 'sicaru' }]} />
       </SidebarHeader>
@@ -69,14 +69,14 @@ const AppSidebar = async () => {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton>
+                <SidebarMenuButton tooltip="Inicio">
                   <Home />
-                  Mi tienda
+                  Inicio
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
               <SidebarMenuItem>
-                <SidebarMenuButton>
+                <SidebarMenuButton tooltip="Sitio web">
                   <Globe />
                   Sitio web
                 </SidebarMenuButton>
@@ -93,7 +93,7 @@ const AppSidebar = async () => {
               <SidebarMenu>
                 {group.items.map((item) => (
                   <SidebarMenuItem key={item.url}>
-                    <SidebarMenuButton asChild>
+                    <SidebarMenuButton asChild tooltip={item.title}>
                       <Link className="flex gap-2" href={item.url}>
                         {item.icon}
                         {item.title}
