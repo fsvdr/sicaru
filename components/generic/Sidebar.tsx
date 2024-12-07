@@ -4,7 +4,17 @@ import { useIsMobile } from '@lib/hooks/use-mobile';
 import { Slot } from '@radix-ui/react-slot';
 import cn from '@utils/cn';
 import { PanelLeft } from 'lucide-react';
-import { ComponentProps, createContext, CSSProperties, forwardRef, useContext, useEffect, useState } from 'react';
+import {
+  ComponentProps,
+  createContext,
+  CSSProperties,
+  forwardRef,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { Sheet, SheetContent } from './Sheet';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './Tooltip';
 
@@ -43,19 +53,31 @@ export const SidebarProvider = ({
   const [_open, _setOpen] = useState(defaultOpen);
 
   const open = openProp ?? _open;
-  const setOpen = (value: boolean | ((value: boolean) => boolean)) => {
-    const openState = typeof value === 'function' ? value(open) : value;
+  const state = open ? 'expanded' : 'collapsed';
 
-    if (setOpenProp) setOpenProp(openState);
-    else _setOpen(openState);
+  const setOpen = useCallback(
+    (value: boolean | ((value: boolean) => boolean)) => {
+      const openState = typeof value === 'function' ? value(open) : value;
 
-    document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
-  };
+      if (setOpenProp) setOpenProp(openState);
+      else _setOpen(openState);
 
-  const toggleSidebar = () => {
+      document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+    },
+    [setOpenProp, open]
+  );
+
+  const toggleSidebar = useCallback(() => {
     if (isMobile) setOpenMobile((open) => !open);
     else setOpen((open) => !open);
-  };
+  }, [isMobile, setOpen, setOpenMobile]);
+
+  // Update state from cookie after mount
+  useEffect(() => {
+    const cookie = document.cookie.split('; ').find((row) => row.startsWith(SIDEBAR_COOKIE_NAME));
+    const cookieValue = cookie ? cookie.split('=')[1] === 'true' : defaultOpen;
+    _setOpen(cookieValue);
+  }, [defaultOpen]);
 
   // Add a keyboard shortcut to toggle the sidebar
   useEffect(() => {
@@ -70,9 +92,10 @@ export const SidebarProvider = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [toggleSidebar]);
 
-  const state = open ? 'expanded' : 'collapsed';
-
-  const value: ISidebarContext = { state, open, setOpen, openMobile, setOpenMobile, isMobile, toggleSidebar };
+  const value: ISidebarContext = useMemo(
+    () => ({ state, open, setOpen, openMobile, setOpenMobile, isMobile, toggleSidebar }),
+    [state, open, setOpen, openMobile, setOpenMobile, isMobile, toggleSidebar]
+  );
 
   return (
     <SidebarContext.Provider value={value}>
