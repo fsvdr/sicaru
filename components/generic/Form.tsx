@@ -1,3 +1,5 @@
+'use client';
+
 import { Slot } from '@radix-ui/react-slot';
 import cn from '@utils/cn';
 import {
@@ -92,7 +94,7 @@ FormControl.displayName = 'FormControl';
 export const FormDescription = ({ className, ...props }: HTMLAttributes<HTMLParagraphElement>) => {
   const { formDescriptionId } = useFormField();
 
-  return <p className={cn('', className)} id={formDescriptionId} {...props} />;
+  return <p className={cn('text-xs text-muted-foreground', className)} id={formDescriptionId} {...props} />;
 };
 
 export const FormMessage = ({ className, children, ...props }: HTMLAttributes<HTMLParagraphElement>) => {
@@ -102,29 +104,70 @@ export const FormMessage = ({ className, children, ...props }: HTMLAttributes<HT
   if (!body) return;
 
   return (
-    <p className={cn('text-xs text-alizarin-crimson-500', className)} id={formMessageId} {...props}>
+    <p
+      className={cn(
+        'text-xs',
+        {
+          'text-alizarin-crimson-500': error,
+          'text-muted-foreground': !error,
+        },
+        className
+      )}
+      id={formMessageId}
+      {...props}
+    >
       {body}
     </p>
   );
 };
 
-export const TextField = forwardRef<HTMLInputElement, HTMLProps<HTMLInputElement>>(({ className, ...props }, ref) => {
-  const { invalid, error } = useFormField();
+export const FieldSlot = forwardRef<ElementRef<typeof Slot>, ComponentPropsWithRef<typeof Slot>>(
+  ({ className, ...props }, ref) => {
+    const { invalid, error } = useFormField();
 
+    return (
+      <Slot
+        className={cn(
+          'border text-base h-8 font-medium tracking-tight border-slate-200 rounded shadow-sm w-full px-1 py-0.5 transition-all duration-150 hover:shadow focus:border-sc-brand-text',
+          invalid && 'border-red-300',
+          className
+        )}
+        ref={ref}
+        {...props}
+      />
+    );
+  }
+);
+
+FieldSlot.displayName = 'FieldSlot';
+
+export const TextField = forwardRef<HTMLInputElement, HTMLProps<HTMLInputElement>>(({ className, ...props }, ref) => {
   return (
-    <input
-      className={cn(
-        'border text-base h-8 font-medium tracking-tight border-slate-200 rounded shadow-sm w-full px-1 py-0.5 transition-all duration-150 hover:shadow focus:border-sc-brand-text',
-        invalid && 'border-red-300',
-        className
-      )}
-      ref={ref}
-      {...props}
-    />
+    <FieldSlot className={className} ref={ref} {...props}>
+      <input />
+    </FieldSlot>
   );
 });
 
 TextField.displayName = 'TextField';
+
+export const TextArea = forwardRef<HTMLTextAreaElement, HTMLProps<HTMLTextAreaElement>>(
+  ({ className, ...props }, ref) => {
+    const { invalid, error } = useFormField();
+
+    return (
+      <textarea
+        className={cn(
+          'border text-base h-24 resize-none font-medium tracking-tight border-slate-200 rounded shadow-sm w-full px-1 py-0.5 transition-all duration-150 hover:shadow focus:border-sc-brand-text',
+          invalid && 'border-red-300',
+          className
+        )}
+        ref={ref}
+        {...props}
+      />
+    );
+  }
+);
 
 export const SubmitButton = forwardRef<HTMLButtonElement, Omit<ButtonProps, 'isLoading'>>((props, ref) => {
   const { pending } = useFormStatus();
