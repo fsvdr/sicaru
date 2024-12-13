@@ -3,7 +3,7 @@ import { ButtonHTMLAttributes, forwardRef } from 'react';
 import Spinner from './Spinner';
 
 export type ButtonProps = {
-  variant?: 'default' | 'primary';
+  variant?: 'default' | 'primary' | 'outline' | 'clear';
   isLoading?: boolean;
 } & ButtonHTMLAttributes<HTMLButtonElement>;
 
@@ -18,6 +18,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             'bg-white border-slate-200 enabled:hover:border-slate-300': variant === 'default',
             'bg-melrose-200 border-melrose-300 text-melrose-600 enabled:hover:border-melrose-400':
               variant === 'primary',
+            'bg-transparent border-slate-200 text-slate-600 enabled:hover:border-slate-300': variant === 'outline',
+            'bg-transparent shadow-none border-transparent text-slate-600 enabled:hover:shadow-none':
+              variant === 'clear',
           },
           className
         )}

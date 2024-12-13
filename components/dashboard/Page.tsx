@@ -2,7 +2,7 @@ import cn from '@utils/cn';
 import { HTMLAttributes, ReactNode } from 'react';
 
 export const DashboardPage = ({ children }: { children: ReactNode }) => {
-  return <div className="flex flex-col gap-8">{children}</div>;
+  return <div className="flex flex-col gap-8 pb-20">{children}</div>;
 };
 
 export const PageHeader = ({ children }: { children: ReactNode }) => {

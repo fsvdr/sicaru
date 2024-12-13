@@ -158,7 +158,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, HTMLProps<HTMLTextAreaEl
     return (
       <textarea
         className={cn(
-          'border text-base h-24 resize-none font-medium tracking-tight border-slate-200 rounded shadow-sm w-full px-1 py-0.5 transition-all duration-150 hover:shadow focus:border-sc-brand-text',
+          'border text-base h-24 resize-none font-medium tracking-tight border-slate-200 rounded shadow-sm w-full px-1 py-0.5 transition-all duration-150 hover:shadow focus:border-sc-brand-text white-space-pre-wrap',
           invalid && 'border-red-300',
           className
         )}
