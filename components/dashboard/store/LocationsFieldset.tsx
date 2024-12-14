@@ -1,5 +1,6 @@
 import Button from '@components/generic/Button';
 import { Card, CardContent } from '@components/generic/Card';
+import ConfirmButton from '@components/generic/ConfirmButton';
 import {
   FormControl,
   FormDescription,
@@ -17,13 +18,15 @@ import { PageAnnotatedSection } from '../Page';
 import { StoreDetailsInput } from './Form';
 
 const LocationsFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> }) => {
+  const locations = form.watch('locations');
+
   return (
     <PageAnnotatedSection title="Sucursales" description="Agrega los datos de contacto de tu negocio">
       <div className="flex flex-col gap-4">
-        {form.watch('locations').map((location, locationIndex) => (
+        {locations.map((location, locationIndex) => (
           <Card className="bg-gray-50/50" key={locationIndex}>
             <CardContent className="flex flex-col gap-2 p-4">
-              {form.watch('locations').length > 1 && (
+              {locations.length > 1 && (
                 <FormField
                   control={form.control}
                   name={`locations.${locationIndex}.isPrimary`}
@@ -32,7 +35,19 @@ const LocationsFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> })
                       <FormLabel>¿Es la sucursal principal?</FormLabel>
 
                       <div className="flex items-center gap-2">
-                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={(checked) => {
+                            // Prevent unchecking the primary location
+                            if (!checked) return;
+
+                            // If turning on primary, update all other locations
+                            const locations = form.getValues('locations');
+                            locations.forEach((_, index) => {
+                              form.setValue(`locations.${index}.isPrimary`, index === locationIndex);
+                            });
+                          }}
+                        />
                         <span className="text-xs text-gray-500">{field.value ? 'Sucursal principal' : 'Sucursal'}</span>
                       </div>
                     </FormItem>
@@ -267,6 +282,24 @@ const LocationsFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> })
                   </FormItem>
                 )}
               />
+
+              {locations.length > 1 && !form.getValues(`locations.${locationIndex}.isPrimary`) && (
+                <ConfirmButton
+                  onConfirm={() => {
+                    const currentLocations = form.getValues('locations');
+                    currentLocations.splice(locationIndex, 1);
+                    form.setValue('locations', currentLocations);
+                  }}
+                  onComplete={() => {}}
+                >
+                  {({ confirm, isLoading }) => (
+                    <div className="flex items-center gap-2">
+                      <Trash2 className="size-4" />
+                      {confirm ? 'Confirmar' : 'Eliminar sucursal'}
+                    </div>
+                  )}
+                </ConfirmButton>
+              )}
             </CardContent>
           </Card>
         ))}
