@@ -26,3 +26,22 @@ export type GenericServerActionResponse<T> =
       data: T;
       error?: never;
     };
+
+export type StoreSocialLink = {
+  url: string;
+  title?: string;
+};
+
+export type LocationPhone = {
+  number: string;
+  isWhatsapp: boolean;
+};
+
+export type LocationSchedule = {
+  day: string;
+  isOpen: boolean;
+  ranges: {
+    open: string;
+    close: string;
+  }[];
+};

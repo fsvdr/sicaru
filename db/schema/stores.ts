@@ -1,5 +1,7 @@
 import { timestamps } from '@db/utils';
-import { sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { LocationPhone, LocationSchedule, StoreSocialLink } from '@types';
+import { relations } from 'drizzle-orm';
+import { integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { users } from './auth';
 
 export const stores = sqliteTable(
@@ -12,10 +14,12 @@ export const stores = sqliteTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     name: text('name').notNull(),
+    category: text('category'),
+    bio: text('bio'),
     favicon: text('favicon'),
     logo: text('logo'),
-    headline: text('headline'),
-    bio: text('bio'),
+    primaryColor: text('primaryColor'),
+    socialLinks: text('socialLinks', { mode: 'json' }).$type<StoreSocialLink[]>(),
     ...timestamps,
   },
   (store) => ({
@@ -23,8 +27,8 @@ export const stores = sqliteTable(
   })
 );
 
-export const storeLocations = sqliteTable(
-  'storeLocations',
+export const locations = sqliteTable(
+  'locations',
   {
     id: text('id')
       .primaryKey()
@@ -32,11 +36,25 @@ export const storeLocations = sqliteTable(
     storeId: text('storeId')
       .notNull()
       .references(() => stores.id, { onDelete: 'cascade' }),
-    name: text('name').notNull(),
+    name: text('name'),
     address: text('address').notNull(),
+    phones: text('phones', { mode: 'json' }).$type<LocationPhone[]>(),
+    isPrimary: integer('isPrimary', { mode: 'boolean' }).notNull().default(false),
+    schedule: text('schedule', { mode: 'json' }).$type<LocationSchedule[]>(),
     ...timestamps,
   },
   (location) => ({
     locationStoreId: uniqueIndex('locationStoreId').on(location.storeId),
   })
 );
+
+export const storesRelations = relations(stores, ({ many }) => ({
+  locations: many(locations),
+}));
+
+export const locationsRelations = relations(locations, ({ one, many }) => ({
+  store: one(stores, {
+    fields: [locations.storeId],
+    references: [stores.id],
+  }),
+}));
