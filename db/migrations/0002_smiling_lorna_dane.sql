@@ -9,8 +9,8 @@ CREATE TABLE `__new_locations` (
 	`phones` text,
 	`isPrimary` integer DEFAULT false NOT NULL,
 	`schedule` text,
-	`createdAt` text DEFAULT DATETIME('now') NOT NULL,
-	`updatedAt` text DEFAULT DATETIME('now') NOT NULL,
+	`createdAt` text DEFAULT (DATETIME('now')) NOT NULL,
+	`updatedAt` text DEFAULT (DATETIME('now')) NOT NULL,
 	FOREIGN KEY (`storeId`) REFERENCES `stores`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
