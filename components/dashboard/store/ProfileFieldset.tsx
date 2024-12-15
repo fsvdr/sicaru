@@ -28,7 +28,7 @@ const ProfileFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> }) =
                 <FormLabel>Nombre</FormLabel>
 
                 <FormControl>
-                  <TextField placeholder="Sicaru" type="text" {...field} />
+                  <TextField placeholder="Sicaru" type="text" {...field} required />
                 </FormControl>
               </FormItem>
             )}
@@ -81,7 +81,7 @@ const ProfileFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> }) =
                           control={form.control}
                           name={`socialLinks.${index}.url`}
                           render={({ field }) => (
-                            <TextField placeholder="https://..." type="url" className="flex-1" {...field} />
+                            <TextField placeholder="https://..." type="url" className="flex-1" {...field} required />
                           )}
                         />
                         <FormField

@@ -63,7 +63,7 @@ const LocationsFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> })
                     <FormLabel>Nombre</FormLabel>
 
                     <FormControl>
-                      <TextField placeholder="Sicaru" type="text" {...field} />
+                      <TextField placeholder="Sicaru" type="text" {...field} required={locations.length > 1} />
                     </FormControl>
 
                     <FormMessage>Si tienes múltiples sucursales, puedes asignarle un nombre aquí</FormMessage>
@@ -83,6 +83,7 @@ const LocationsFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> })
                         type="address"
                         placeholder="Av. Revolución 123, Col. Centro, Ciudad de México, México"
                         {...field}
+                        required
                       />
                     </FormControl>
                   </FormItem>
@@ -104,12 +105,18 @@ const LocationsFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> })
                       <div className="flex flex-col gap-2">
                         {form.watch('locations.0.phones')?.map((_, index) => (
                           <div key={index} className="flex gap-2">
-                            <div className="flex-1 flex items-center gap-2">
+                            <div className="flex items-center flex-1 gap-2">
                               <FormField
                                 control={form.control}
                                 name={`locations.${locationIndex}.phones.${index}.number`}
                                 render={({ field }) => (
-                                  <TextField placeholder="+52 123 456 7890" type="tel" className="w-48" {...field} />
+                                  <TextField
+                                    placeholder="+52 123 456 7890"
+                                    type="tel"
+                                    className="w-48"
+                                    {...field}
+                                    required
+                                  />
                                 )}
                               />
 
@@ -186,7 +193,7 @@ const LocationsFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> })
                           return (
                             <div className="py-2 space-y-2 md:px-4" key={day.id}>
                               <div className="flex items-center justify-between">
-                                <h4 className="font-medium text-xs">{day.label}</h4>
+                                <h4 className="text-xs font-medium">{day.label}</h4>
 
                                 <FormField
                                   control={form.control}
@@ -205,10 +212,10 @@ const LocationsFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> })
                               {daySchedule.isOpen && (
                                 <div className="space-y-2">
                                   {daySchedule.ranges.map((_, rangeIndex) => (
-                                    <div className="group flex items-center gap-1" key={rangeIndex}>
+                                    <div className="flex items-center gap-1 group" key={rangeIndex}>
                                       <TextField
                                         type="time"
-                                        className="w-22 text-xs h-6"
+                                        className="h-6 text-xs w-22"
                                         {...form.register(
                                           `locations.${locationIndex}.schedule.${dayIndex}.ranges.${rangeIndex}.open`
                                         )}
@@ -218,7 +225,7 @@ const LocationsFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> })
 
                                       <TextField
                                         type="time"
-                                        className="w-22 text-xs h-6"
+                                        className="h-6 text-xs w-22"
                                         {...form.register(
                                           `locations.${locationIndex}.schedule.${dayIndex}.ranges.${rangeIndex}.close`
                                         )}
@@ -254,7 +261,7 @@ const LocationsFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> })
                                           <Button
                                             type="button"
                                             variant="outline"
-                                            className="group-last:flex hidden h-6"
+                                            className="hidden h-6 group-last:flex"
                                             onClick={() => {
                                               const ranges = [...daySchedule.ranges];
                                               ranges.push({ open: '09:00', close: '18:00' });
