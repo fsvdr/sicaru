@@ -2,6 +2,8 @@
 
 import { Slot } from '@radix-ui/react-slot';
 import cn from '@utils/cn';
+import { AnimatePresence, motion } from 'framer-motion';
+import { TriangleAlert } from 'lucide-react';
 import {
   ComponentPropsWithRef,
   createContext,
@@ -15,6 +17,7 @@ import {
 import { useFormStatus } from 'react-dom';
 import { Controller, ControllerProps, FieldPath, FieldValues, FormProvider, useFormContext } from 'react-hook-form';
 import Button, { ButtonProps } from './Button';
+import { useSidebar } from './Sidebar';
 
 export const Form = FormProvider;
 
@@ -176,3 +179,42 @@ export const SubmitButton = forwardRef<HTMLButtonElement, Omit<ButtonProps, 'isL
 });
 
 SubmitButton.displayName = 'SubmitButton';
+
+export const SaveBar = () => {
+  const { state, isMobile } = useSidebar();
+  const { formState, reset } = useFormContext();
+
+  return (
+    <AnimatePresence>
+      {formState.isDirty && (
+        <motion.div
+          initial={isMobile ? { y: 100 } : { y: -100 }}
+          animate={{ y: 0 }}
+          exit={isMobile ? { y: 100 } : { y: -100 }}
+          transition={{ duration: 0.2, bounce: 0.2 }}
+          className={cn(
+            'fixed bottom-0 top-auto inset-x-0 text-white shadow-lg bg-melrose-500 md:top-0 md:bottom-auto z-savebar md:py-1',
+            state === 'collapsed' ? 'md:pl-[--sidebar-width-icon]' : 'md:pl-[--sidebar-width]'
+          )}
+        >
+          <div className="flex items-center justify-between px-4 py-2">
+            <h2 className="flex items-center gap-1 text-sm font-medium md:gap-2 md:text-base">
+              <TriangleAlert className="size-4" />
+              Cambios sin guardar
+            </h2>
+
+            <div className="flex items-center justify-end gap-2">
+              <Button onClick={() => reset()} type="button" className="text-white h-7 bg-melrose-400">
+                Descartar
+              </Button>
+
+              <SubmitButton type="submit" className="font-semibold h-7 text-melrose-500">
+                Guardar
+              </SubmitButton>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};

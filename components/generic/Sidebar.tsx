@@ -165,7 +165,7 @@ export const Sidebar = ({
 
   return (
     <div
-      className="hidden group peer md:block text-sidebar-foreground"
+      className="hidden group peer md:block text-sidebar-foreground z-sidebar"
       data-state={state}
       data-collapsible={state === 'collapsed' ? collapsible : ''}
       data-variant={variant}

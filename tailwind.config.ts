@@ -104,6 +104,10 @@ const config: Config = {
       borderRadius: {
         '4xl': '2rem',
       },
+      zIndex: {
+        sidebar: '20',
+        savebar: '10',
+      },
     },
   },
   plugins: [require('tailwindcss-animate')],

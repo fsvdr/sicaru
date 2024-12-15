@@ -1,6 +1,6 @@
 'use client';
 
-import { Form } from '@components/generic/Form';
+import { Form, SaveBar } from '@components/generic/Form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useFormState } from 'react-dom';
 import { useForm } from 'react-hook-form';
@@ -41,6 +41,8 @@ const StoreDetailsForm = () => {
   return (
     <Form {...form}>
       <form className="flex flex-col gap-8" action={handleSubmit}>
+        <SaveBar />
+
         <ProfileFieldset form={form} />
 
         <BrandFieldset form={form} />
