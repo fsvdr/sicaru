@@ -1,15 +1,17 @@
 import cn from '@utils/cn';
-import { ButtonHTMLAttributes, forwardRef } from 'react';
+import { ButtonHTMLAttributes, forwardRef, ReactNode } from 'react';
 import Spinner from './Spinner';
+import { Tooltip, TooltipContent, TooltipTrigger } from './Tooltip';
 
 export type ButtonProps = {
   variant?: 'default' | 'primary' | 'outline' | 'clear';
   isLoading?: boolean;
+  tooltip?: ReactNode;
 } & ButtonHTMLAttributes<HTMLButtonElement>;
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = 'default', className, disabled, isLoading = false, children, ...props }, ref) => {
-    return (
+  ({ variant = 'default', tooltip, className, disabled, isLoading = false, children, ...props }, ref) => {
+    const button = (
       <button
         className={cn(
           'flex justify-center h-8 items-center gap-2 font-medium text-sm px-2 py-1 rounded shadow-sm border transition-all duration-150 enabled:hover:shadow',
@@ -31,6 +33,17 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {isLoading ? <Spinner /> : children}
       </button>
     );
+
+    if (tooltip)
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>{button}</TooltipTrigger>
+
+          <TooltipContent>{tooltip}</TooltipContent>
+        </Tooltip>
+      );
+
+    return button;
   }
 );
 

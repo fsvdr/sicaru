@@ -11,7 +11,6 @@ import {
   TextField,
 } from '@components/generic/Form';
 import { Switch } from '@components/generic/Switch';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@components/generic/Tooltip';
 import { Plus, Trash2 } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
 import { PageAnnotatedSection } from '../Page';
@@ -145,27 +144,22 @@ const LocationsFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> })
                               />
                             </div>
 
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  type="button"
-                                  aria-label="Eliminar número"
-                                  variant="clear"
-                                  onClick={() => {
-                                    const currentPhones = form.getValues('locations.0.phones');
-                                    form.setValue(
-                                      `locations.${locationIndex}.phones`,
-                                      currentPhones.filter((_, i) => i !== index),
-                                      { shouldDirty: true }
-                                    );
-                                  }}
-                                >
-                                  <Trash2 className="text-alizarin-crimson-500 size-4" />
-                                </Button>
-                              </TooltipTrigger>
-
-                              <TooltipContent>Eliminar número</TooltipContent>
-                            </Tooltip>
+                            <Button
+                              type="button"
+                              tooltip="Eliminar número"
+                              aria-label="Eliminar número"
+                              variant="clear"
+                              onClick={() => {
+                                const currentPhones = form.getValues('locations.0.phones');
+                                form.setValue(
+                                  `locations.${locationIndex}.phones`,
+                                  currentPhones.filter((_, i) => i !== index),
+                                  { shouldDirty: true }
+                                );
+                              }}
+                            >
+                              <Trash2 className="text-alizarin-crimson-500 size-4" />
+                            </Button>
                           </div>
                         ))}
 
@@ -255,53 +249,44 @@ const LocationsFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> })
                                     />
 
                                     {daySchedule.ranges.length > 1 && (
-                                      <Tooltip>
-                                        <TooltipTrigger asChild>
-                                          <Button
-                                            type="button"
-                                            aria-label="Eliminar horario"
-                                            variant="clear"
-                                            className="h-6"
-                                            onClick={() => {
-                                              const ranges = [...daySchedule.ranges];
-                                              ranges.splice(rangeIndex, 1);
-                                              form.setValue(
-                                                `locations.${locationIndex}.schedule.${dayIndex}.ranges`,
-                                                ranges,
-                                                { shouldDirty: true }
-                                              );
-                                            }}
-                                          >
-                                            <Trash2 className="size-4 text-alizarin-crimson-500" />
-                                          </Button>
-                                        </TooltipTrigger>
-
-                                        <TooltipContent>Eliminar horario</TooltipContent>
-                                      </Tooltip>
+                                      <Button
+                                        type="button"
+                                        tooltip="Eliminar horario"
+                                        aria-label="Eliminar horario"
+                                        variant="clear"
+                                        className="h-6"
+                                        onClick={() => {
+                                          const ranges = [...daySchedule.ranges];
+                                          ranges.splice(rangeIndex, 1);
+                                          form.setValue(
+                                            `locations.${locationIndex}.schedule.${dayIndex}.ranges`,
+                                            ranges,
+                                            { shouldDirty: true }
+                                          );
+                                        }}
+                                      >
+                                        <Trash2 className="size-4 text-alizarin-crimson-500" />
+                                      </Button>
                                     )}
 
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <Button
-                                          type="button"
-                                          variant="outline"
-                                          className="hidden h-6 group-last:flex"
-                                          onClick={() => {
-                                            const ranges = [...daySchedule.ranges];
-                                            ranges.push({ open: '09:00', close: '18:00' });
-                                            form.setValue(
-                                              `locations.${locationIndex}.schedule.${dayIndex}.ranges`,
-                                              ranges,
-                                              { shouldDirty: true }
-                                            );
-                                          }}
-                                        >
-                                          <Plus className="size-4" />
-                                        </Button>
-                                      </TooltipTrigger>
-
-                                      <TooltipContent>Agregar horario</TooltipContent>
-                                    </Tooltip>
+                                    <Button
+                                      type="button"
+                                      tooltip="Agregar horario"
+                                      aria-label="Agregar horario"
+                                      variant="outline"
+                                      className="hidden h-6 group-last:flex"
+                                      onClick={() => {
+                                        const ranges = [...daySchedule.ranges];
+                                        ranges.push({ open: '09:00', close: '18:00' });
+                                        form.setValue(
+                                          `locations.${locationIndex}.schedule.${dayIndex}.ranges`,
+                                          ranges,
+                                          { shouldDirty: true }
+                                        );
+                                      }}
+                                    >
+                                      <Plus className="size-4" />
+                                    </Button>
                                   </div>
                                 ))}
                               </div>

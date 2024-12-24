@@ -9,7 +9,6 @@ import {
   TextArea,
   TextField,
 } from '@components/generic/Form';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@components/generic/Tooltip';
 import { Trash2 } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
 import { PageAnnotatedSection } from '../Page';
@@ -96,27 +95,22 @@ const ProfileFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> }) =
                           )}
                         />
 
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              type="button"
-                              aria-label="Eliminar link"
-                              variant="clear"
-                              onClick={() => {
-                                const currentLinks = form.getValues('socialLinks');
-                                form.setValue(
-                                  'socialLinks',
-                                  currentLinks.filter((_, i) => i !== index),
-                                  { shouldDirty: true }
-                                );
-                              }}
-                            >
-                              <Trash2 className="text-alizarin-crimson-500 size-4" />
-                            </Button>
-                          </TooltipTrigger>
-
-                          <TooltipContent>Eliminar link</TooltipContent>
-                        </Tooltip>
+                        <Button
+                          type="button"
+                          aria-label="Eliminar link"
+                          tooltip="Eliminar link"
+                          variant="clear"
+                          onClick={() => {
+                            const currentLinks = form.getValues('socialLinks');
+                            form.setValue(
+                              'socialLinks',
+                              currentLinks.filter((_, i) => i !== index),
+                              { shouldDirty: true }
+                            );
+                          }}
+                        >
+                          <Trash2 className="text-alizarin-crimson-500 size-4" />
+                        </Button>
                       </div>
                     ))}
 
