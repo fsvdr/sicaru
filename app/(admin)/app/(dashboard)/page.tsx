@@ -1,6 +1,7 @@
 import { DashboardPage, PageHeader, PageTitle } from '@components/dashboard/Page';
 import StoreDetailsForm from '@components/dashboard/store/Form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@components/generic/Card';
+import { resolveActiveStore } from '@utils/resolveActiveStore';
 
 const onboardingSteps = [
   {
@@ -18,6 +19,8 @@ const onboardingSteps = [
 ];
 
 const DashboardHomePage = async () => {
+  const { activeStore } = await resolveActiveStore();
+
   return (
     <DashboardPage>
       <PageHeader>
@@ -58,7 +61,7 @@ const DashboardHomePage = async () => {
         </div>
       </Card>
 
-      <StoreDetailsForm />
+      <StoreDetailsForm store={activeStore} />
     </DashboardPage>
   );
 };

@@ -26,34 +26,36 @@ const LocationsFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> })
         {locations.map((location, locationIndex) => (
           <Card className="bg-gray-50/50" key={locationIndex}>
             <CardContent className="flex flex-col gap-2 p-4">
-              {locations.length > 1 && (
-                <FormField
-                  control={form.control}
-                  name={`locations.${locationIndex}.isPrimary`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>¿Es la sucursal principal?</FormLabel>
+              <FormField
+                control={form.control}
+                name={`locations.${locationIndex}.isPrimary`}
+                render={({ field }) => (
+                  <FormItem className={locations.length === 1 ? 'hidden' : ''}>
+                    <FormLabel>¿Es la sucursal principal?</FormLabel>
 
-                      <div className="flex items-center gap-2">
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={(checked) => {
-                            // Prevent unchecking the primary location
-                            if (!checked) return;
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        name={field.name}
+                        checked={field.value}
+                        sendUnchecked
+                        onCheckedChange={(checked) => {
+                          // Prevent unchecking the primary location
+                          if (!checked) return;
 
-                            // If turning on primary, update all other locations
-                            const locations = form.getValues('locations');
-                            locations.forEach((_, index) => {
-                              form.setValue(`locations.${index}.isPrimary`, index === locationIndex);
+                          // If turning on primary, update all other locations
+                          const locations = form.getValues('locations');
+                          locations.forEach((_, index) => {
+                            form.setValue(`locations.${index}.isPrimary`, index === locationIndex, {
+                              shouldDirty: true,
                             });
-                          }}
-                        />
-                        <span className="text-xs text-gray-500">{field.value ? 'Sucursal principal' : 'Sucursal'}</span>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-              )}
+                          });
+                        }}
+                      />
+                      <span className="text-xs text-gray-500">{field.value ? 'Sucursal principal' : 'Sucursal'}</span>
+                    </div>
+                  </FormItem>
+                )}
+              />
 
               <FormField
                 control={form.control}
@@ -103,7 +105,11 @@ const LocationsFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> })
 
                     <FormControl>
                       <div className="flex flex-col gap-2">
-                        {form.watch('locations.0.phones')?.map((_, index) => (
+                        {(!field.value || field.value.length === 0) && (
+                          <input type="hidden" name={field.name} value="[]" />
+                        )}
+
+                        {field.value?.map((_, index) => (
                           <div key={index} className="flex gap-2">
                             <div className="flex items-center flex-1 gap-2">
                               <FormField
@@ -125,7 +131,12 @@ const LocationsFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> })
                                 name={`locations.${locationIndex}.phones.${index}.isWhatsapp`}
                                 render={({ field }) => (
                                   <div className="flex items-center gap-2">
-                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                    <Switch
+                                      name={field.name}
+                                      checked={field.value}
+                                      sendUnchecked
+                                      onCheckedChange={field.onChange}
+                                    />
                                     <span className="text-xs text-gray-500">
                                       {field.value ? 'Whatsapp' : 'Teléfono'}
                                     </span>
@@ -144,7 +155,8 @@ const LocationsFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> })
                                     const currentPhones = form.getValues('locations.0.phones');
                                     form.setValue(
                                       `locations.${locationIndex}.phones`,
-                                      currentPhones.filter((_, i) => i !== index)
+                                      currentPhones.filter((_, i) => i !== index),
+                                      { shouldDirty: true }
                                     );
                                   }}
                                 >
@@ -163,10 +175,11 @@ const LocationsFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> })
                           className="border-dashed shadow-none enabled:hover:shadow-none"
                           onClick={() => {
                             const currentPhones = form.getValues(`locations.${locationIndex}.phones`) || [];
-                            form.setValue(`locations.${locationIndex}.phones`, [
-                              ...currentPhones,
-                              { number: '', isWhatsapp: false },
-                            ]);
+                            form.setValue(
+                              `locations.${locationIndex}.phones`,
+                              [...currentPhones, { number: '', isWhatsapp: false }],
+                              { shouldDirty: true }
+                            );
                           }}
                         >
                           Agregar número
@@ -195,6 +208,12 @@ const LocationsFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> })
                               <div className="flex items-center justify-between">
                                 <h4 className="text-xs font-medium">{day.label}</h4>
 
+                                <input
+                                  type="hidden"
+                                  name={`locations.${locationIndex}.schedule.${dayIndex}.day`}
+                                  value={day.id}
+                                />
+
                                 <FormField
                                   control={form.control}
                                   name={`locations.${locationIndex}.schedule.${dayIndex}.isOpen`}
@@ -203,84 +222,89 @@ const LocationsFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> })
                                       <span className="text-xs text-gray-500">
                                         {openField.value ? 'Abierto' : 'Cerrado'}
                                       </span>
-                                      <Switch checked={openField.value} onCheckedChange={openField.onChange} />
+                                      <Switch
+                                        name={openField.name}
+                                        checked={openField.value}
+                                        sendUnchecked
+                                        onCheckedChange={openField.onChange}
+                                      />
                                     </div>
                                   )}
                                 />
                               </div>
 
-                              {daySchedule.isOpen && (
-                                <div className="space-y-2">
-                                  {daySchedule.ranges.map((_, rangeIndex) => (
-                                    <div className="flex items-center gap-1 group" key={rangeIndex}>
-                                      <TextField
-                                        type="time"
-                                        className="h-6 text-xs w-22"
-                                        {...form.register(
-                                          `locations.${locationIndex}.schedule.${dayIndex}.ranges.${rangeIndex}.open`
-                                        )}
-                                      />
-
-                                      <span>-</span>
-
-                                      <TextField
-                                        type="time"
-                                        className="h-6 text-xs w-22"
-                                        {...form.register(
-                                          `locations.${locationIndex}.schedule.${dayIndex}.ranges.${rangeIndex}.close`
-                                        )}
-                                      />
-
-                                      {daySchedule.ranges.length > 1 && (
-                                        <Tooltip>
-                                          <TooltipTrigger asChild>
-                                            <Button
-                                              type="button"
-                                              aria-label="Eliminar horario"
-                                              variant="clear"
-                                              className="h-6"
-                                              onClick={() => {
-                                                const ranges = [...daySchedule.ranges];
-                                                ranges.splice(rangeIndex, 1);
-                                                form.setValue(
-                                                  `locations.${locationIndex}.schedule.${dayIndex}.ranges`,
-                                                  ranges
-                                                );
-                                              }}
-                                            >
-                                              <Trash2 className="size-4 text-alizarin-crimson-500" />
-                                            </Button>
-                                          </TooltipTrigger>
-
-                                          <TooltipContent>Eliminar horario</TooltipContent>
-                                        </Tooltip>
+                              <div className="space-y-2" hidden={!daySchedule.isOpen}>
+                                {daySchedule.ranges.map((_, rangeIndex) => (
+                                  <div className="flex items-center gap-1 group" key={rangeIndex}>
+                                    <TextField
+                                      type="time"
+                                      className="h-6 text-xs w-22"
+                                      {...form.register(
+                                        `locations.${locationIndex}.schedule.${dayIndex}.ranges.${rangeIndex}.open`
                                       )}
+                                    />
 
+                                    <span>-</span>
+
+                                    <TextField
+                                      type="time"
+                                      className="h-6 text-xs w-22"
+                                      {...form.register(
+                                        `locations.${locationIndex}.schedule.${dayIndex}.ranges.${rangeIndex}.close`
+                                      )}
+                                    />
+
+                                    {daySchedule.ranges.length > 1 && (
                                       <Tooltip>
                                         <TooltipTrigger asChild>
                                           <Button
                                             type="button"
-                                            variant="outline"
-                                            className="hidden h-6 group-last:flex"
+                                            aria-label="Eliminar horario"
+                                            variant="clear"
+                                            className="h-6"
                                             onClick={() => {
                                               const ranges = [...daySchedule.ranges];
-                                              ranges.push({ open: '09:00', close: '18:00' });
+                                              ranges.splice(rangeIndex, 1);
                                               form.setValue(
                                                 `locations.${locationIndex}.schedule.${dayIndex}.ranges`,
-                                                ranges
+                                                ranges,
+                                                { shouldDirty: true }
                                               );
                                             }}
                                           >
-                                            <Plus className="size-4" />
+                                            <Trash2 className="size-4 text-alizarin-crimson-500" />
                                           </Button>
                                         </TooltipTrigger>
 
-                                        <TooltipContent>Agregar horario</TooltipContent>
+                                        <TooltipContent>Eliminar horario</TooltipContent>
                                       </Tooltip>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
+                                    )}
+
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          type="button"
+                                          variant="outline"
+                                          className="hidden h-6 group-last:flex"
+                                          onClick={() => {
+                                            const ranges = [...daySchedule.ranges];
+                                            ranges.push({ open: '09:00', close: '18:00' });
+                                            form.setValue(
+                                              `locations.${locationIndex}.schedule.${dayIndex}.ranges`,
+                                              ranges,
+                                              { shouldDirty: true }
+                                            );
+                                          }}
+                                        >
+                                          <Plus className="size-4" />
+                                        </Button>
+                                      </TooltipTrigger>
+
+                                      <TooltipContent>Agregar horario</TooltipContent>
+                                    </Tooltip>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           );
                         })}
@@ -295,7 +319,7 @@ const LocationsFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> })
                   onConfirm={() => {
                     const currentLocations = form.getValues('locations');
                     currentLocations.splice(locationIndex, 1);
-                    form.setValue('locations', currentLocations);
+                    form.setValue('locations', currentLocations, { shouldDirty: true });
                   }}
                   onComplete={() => {}}
                 >
@@ -317,16 +341,20 @@ const LocationsFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> })
           className="border-dashed shadow-none enabled:hover:shadow-none"
           onClick={() => {
             const currentLocations = form.getValues('locations') || [];
-            form.setValue('locations', [
-              ...currentLocations,
-              {
-                name: '',
-                address: '',
-                phones: [{ number: '', isWhatsapp: false }],
-                isPrimary: false,
-                schedule: createDefaultSchedule(),
-              },
-            ]);
+            form.setValue(
+              'locations',
+              [
+                ...currentLocations,
+                {
+                  name: '',
+                  address: '',
+                  phones: [{ number: '', isWhatsapp: false }],
+                  isPrimary: false,
+                  schedule: createDefaultSchedule(),
+                },
+              ],
+              { shouldDirty: true }
+            );
           }}
         >
           Agregar sucursal

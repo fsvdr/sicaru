@@ -2,46 +2,35 @@
 
 import { Form, SaveBar } from '@components/generic/Form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { StoreDAO } from '@lib/dao/StoreDAO';
+import { useEffect } from 'react';
 import { useFormState } from 'react-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { updateStoreDetails } from './actions';
+import { updateStoreDetails } from '../../../app/(admin)/app/(dashboard)/actions';
 import BrandFieldset from './BrandFieldset';
 import LocationsFieldset, { createDefaultSchedule } from './LocationsFieldset';
 import ProfileFieldset from './ProfileFieldset';
+import { dayScheduleSchema, storeDetailsSchema } from './types';
 
-const formatTimeRange = (range: { open: string; close: string }) => `${range.open} - ${range.close}`;
-
-const StoreDetailsForm = () => {
+const StoreDetailsForm = ({ store }: { store?: Awaited<ReturnType<typeof StoreDAO.getStore>> }) => {
   const [response, handleSubmit] = useFormState(updateStoreDetails, { state: 'PENDING' });
 
   const form = useForm<StoreDetailsInput>({
     resolver: zodResolver(storeDetailsSchema),
-    defaultValues: {
-      id: '',
-      name: '',
-      category: '',
-      bio: '',
-      socialLinks: [{ url: '', title: '' }],
-      favicon: '',
-      logo: '',
-      primaryColor: '#7d62f0',
-      locations: [
-        {
-          name: '',
-          address: '',
-          phones: [{ number: '', isWhatsapp: false }],
-          isPrimary: true,
-          schedule: createDefaultSchedule(),
-        },
-      ],
-    },
+    defaultValues: getFormValuesFromStore(store),
   });
+
+  useEffect(() => {
+    form.reset(getFormValuesFromStore(store));
+  }, [store]);
 
   return (
     <Form {...form}>
       <form className="flex flex-col gap-8" action={handleSubmit}>
         <SaveBar />
+
+        <input type="hidden" name="id" value={store?.id ?? ''} />
 
         <ProfileFieldset form={form} />
 
@@ -55,50 +44,26 @@ const StoreDetailsForm = () => {
 
 export default StoreDetailsForm;
 
-const scheduleRangeSchema = z.object({
-  open: z.string(),
-  close: z.string(),
-});
-
-const dayScheduleSchema = z.object({
-  day: z.string(),
-  isOpen: z.boolean().default(true),
-  ranges: z.array(scheduleRangeSchema).min(1),
-});
 export type DayScheduleInput = z.infer<typeof dayScheduleSchema>;
-
-export const storeDetailsSchema = z.object({
-  id: z.string(),
-  name: z.string().min(1),
-  category: z.string().max(42).optional(),
-  bio: z.string().optional(),
-  favicon: z.string().optional(),
-  logo: z.string().optional(),
-  primaryColor: z
-    .string()
-    .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$/)
-    .optional()
-    .describe('Must be a valid hex color (e.g., #FF0000 or #FF0000FF)'),
-  socialLinks: z.array(
-    z.object({
-      url: z.string().url(),
-      title: z.string().min(1).optional(),
-    })
-  ),
-  locations: z.array(
-    z.object({
-      name: z.string().min(1).optional(),
-      address: z.string().min(1),
-      phones: z.array(
-        z.object({
-          number: z.string().min(1),
-          isWhatsapp: z.boolean(),
-        })
-      ),
-      isPrimary: z.boolean(),
-      schedule: z.array(dayScheduleSchema),
-    })
-  ),
-});
-
 export type StoreDetailsInput = z.infer<typeof storeDetailsSchema>;
+
+const getFormValuesFromStore = (store: Awaited<ReturnType<typeof StoreDAO.getStore>>) => {
+  return {
+    id: store?.id ?? '',
+    name: store?.name ?? '',
+    category: store?.category ?? '',
+    bio: store?.bio ?? '',
+    socialLinks: store?.socialLinks ?? [],
+    favicon: store?.favicon ?? '',
+    logo: store?.logo ?? '',
+    primaryColor: store?.primaryColor ?? '',
+    locations: store
+      ? store.locations.map((location) => ({
+          ...location,
+          name: location.name ?? '',
+          phones: location.phones ?? [],
+          schedule: location.schedule ?? createDefaultSchedule(),
+        })) ?? []
+      : [{ address: '', phones: [], schedule: createDefaultSchedule(), isPrimary: true, name: '' }],
+  };
+};

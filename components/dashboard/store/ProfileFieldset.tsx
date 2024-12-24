@@ -75,7 +75,11 @@ const ProfileFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> }) =
 
                 <FormControl>
                   <div className="flex flex-col gap-2">
-                    {form.watch('socialLinks')?.map((_, index) => (
+                    {(!field.value || field.value.length === 0) && (
+                      <input type="hidden" name="socialLinks" value="[]" />
+                    )}
+
+                    {field.value?.map((_, index) => (
                       <div key={index} className="flex gap-2">
                         <FormField
                           control={form.control}
@@ -102,7 +106,8 @@ const ProfileFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> }) =
                                 const currentLinks = form.getValues('socialLinks');
                                 form.setValue(
                                   'socialLinks',
-                                  currentLinks.filter((_, i) => i !== index)
+                                  currentLinks.filter((_, i) => i !== index),
+                                  { shouldDirty: true }
                                 );
                               }}
                             >
@@ -121,7 +126,7 @@ const ProfileFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> }) =
                       className="border-dashed shadow-none enabled:hover:shadow-none"
                       onClick={() => {
                         const currentLinks = form.getValues('socialLinks') || [];
-                        form.setValue('socialLinks', [...currentLinks, { url: '', title: '' }]);
+                        form.setValue('socialLinks', [...currentLinks, { url: '', title: '' }], { shouldDirty: true });
                       }}
                     >
                       Agregar link

@@ -3,6 +3,7 @@ import { UploadCloud, X } from 'lucide-react';
 import { ChangeEvent, DragEvent, useCallback, useState } from 'react';
 
 interface ImageDropZoneProps {
+  name: string;
   width?: string;
   height?: string;
   defaultImageUrl?: string;
@@ -10,7 +11,7 @@ interface ImageDropZoneProps {
   onChange: (image?: string) => void;
 }
 
-const ImageDropZone = ({ width, height, defaultImageUrl, className, onChange }: ImageDropZoneProps) => {
+const ImageDropZone = ({ name, width, height, defaultImageUrl, className, onChange }: ImageDropZoneProps) => {
   const [image, setImage] = useState<string | undefined>(defaultImageUrl);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -79,6 +80,8 @@ const ImageDropZone = ({ width, height, defaultImageUrl, className, onChange }: 
         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
         aria-label="Upload image"
       />
+
+      <input type="hidden" name={name} value={image ?? ''} />
 
       {image ? (
         <>

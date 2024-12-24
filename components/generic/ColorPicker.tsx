@@ -4,7 +4,15 @@ import { HexColorInput, HexColorPicker } from 'react-colorful';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from './DropdownMenu';
 import { FieldSlot } from './Form';
 
-const ColorPicker = ({ defaultValue, onChange }: { defaultValue?: string; onChange: (color: string) => void }) => {
+const ColorPicker = ({
+  name,
+  defaultValue,
+  onChange,
+}: {
+  name: string;
+  defaultValue?: string;
+  onChange: (color: string) => void;
+}) => {
   const isMobile = useIsMobile();
   const [color, setColor] = useState(defaultValue || '#000000');
 
@@ -17,6 +25,7 @@ const ColorPicker = ({ defaultValue, onChange }: { defaultValue?: string; onChan
 
         <FieldSlot className="flex-1">
           <HexColorInput
+            name={name}
             color={color}
             prefixed
             alpha

@@ -23,6 +23,7 @@ const BrandFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> }) => 
 
                 <FormControl>
                   <ImageDropZone
+                    name={field.name}
                     defaultImageUrl={field.value}
                     width="120"
                     height="120"
@@ -47,6 +48,7 @@ const BrandFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> }) => 
                 </FormDescription>
                 <FormControl>
                   <ImageDropZone
+                    name={field.name}
                     defaultImageUrl={field.value}
                     className="w-full aspect-video"
                     onChange={(image) => field.onChange(image)}
@@ -66,7 +68,11 @@ const BrandFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> }) => 
                 <FormLabel>Color principal</FormLabel>
 
                 <FormControl>
-                  <ColorPicker defaultValue={field.value} onChange={(color) => field.onChange(color)} />
+                  <ColorPicker
+                    name={field.name}
+                    defaultValue={field.value}
+                    onChange={(color) => field.onChange(color)}
+                  />
                 </FormControl>
 
                 <FormMessage>Tip: Da click en el color para abrir el selector</FormMessage>
