@@ -1,3 +1,5 @@
+import { getDatabaseClient } from '@utils/db';
+
 export enum GenericAPIErrorCode {
   UNKNOWN_ERROR,
   UNABLE_TO_AUTHENTICATE,
@@ -45,3 +47,5 @@ export type LocationSchedule = {
     close: string;
   }[];
 };
+
+export type Database = Awaited<ReturnType<typeof getDatabaseClient>>;
