@@ -54,8 +54,6 @@ export class StoreDAO {
         );
       }
 
-      console.log('[SC] New store created', newStore);
-
       const store = await tx.query.stores.findFirst({
         where: and(eq(stores.id, newStore.id), eq(stores.userId, userId)),
         with: {
