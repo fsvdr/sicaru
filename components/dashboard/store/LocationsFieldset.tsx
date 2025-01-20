@@ -32,26 +32,24 @@ const LocationsFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> })
                   <FormItem className={locations.length === 1 ? 'hidden' : ''}>
                     <FormLabel>¿Es la sucursal principal?</FormLabel>
 
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        name={field.name}
-                        checked={field.value}
-                        sendUnchecked
-                        onCheckedChange={(checked) => {
-                          // Prevent unchecking the primary location
-                          if (!checked) return;
+                    <Switch
+                      name={field.name}
+                      checked={field.value}
+                      sendUnchecked
+                      onCheckedChange={(checked) => {
+                        // Prevent unchecking the primary location
+                        if (!checked) return;
 
-                          // If turning on primary, update all other locations
-                          const locations = form.getValues('locations');
-                          locations.forEach((_, index) => {
-                            form.setValue(`locations.${index}.isPrimary`, index === locationIndex, {
-                              shouldDirty: true,
-                            });
+                        // If turning on primary, update all other locations
+                        const locations = form.getValues('locations');
+                        locations.forEach((_, index) => {
+                          form.setValue(`locations.${index}.isPrimary`, index === locationIndex, {
+                            shouldDirty: true,
                           });
-                        }}
-                      />
-                      <span className="text-xs text-gray-500">{field.value ? 'Sucursal principal' : 'Sucursal'}</span>
-                    </div>
+                        });
+                      }}
+                      label={field.value ? 'Sucursal principal' : 'Sucursal'}
+                    />
                   </FormItem>
                 )}
               />
@@ -129,17 +127,13 @@ const LocationsFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> })
                                 control={form.control}
                                 name={`locations.${locationIndex}.phones.${index}.isWhatsapp`}
                                 render={({ field }) => (
-                                  <div className="flex items-center gap-2">
-                                    <Switch
-                                      name={field.name}
-                                      checked={field.value}
-                                      sendUnchecked
-                                      onCheckedChange={field.onChange}
-                                    />
-                                    <span className="text-xs text-gray-500">
-                                      {field.value ? 'Whatsapp' : 'Teléfono'}
-                                    </span>
-                                  </div>
+                                  <Switch
+                                    name={field.name}
+                                    checked={field.value}
+                                    sendUnchecked
+                                    onCheckedChange={field.onChange}
+                                    label={field.value ? 'Whatsapp' : 'Teléfono'}
+                                  />
                                 )}
                               />
                             </div>
@@ -212,17 +206,14 @@ const LocationsFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> })
                                   control={form.control}
                                   name={`locations.${locationIndex}.schedule.${dayIndex}.isOpen`}
                                   render={({ field: openField }) => (
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-xs text-gray-500">
-                                        {openField.value ? 'Abierto' : 'Cerrado'}
-                                      </span>
-                                      <Switch
-                                        name={openField.name}
-                                        checked={openField.value}
-                                        sendUnchecked
-                                        onCheckedChange={openField.onChange}
-                                      />
-                                    </div>
+                                    <Switch
+                                      name={openField.name}
+                                      checked={openField.value}
+                                      sendUnchecked
+                                      onCheckedChange={openField.onChange}
+                                      label={openField.value ? 'Abierto' : 'Cerrado'}
+                                      labelPosition="left"
+                                    />
                                   )}
                                 />
                               </div>

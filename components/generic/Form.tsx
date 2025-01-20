@@ -14,6 +14,7 @@ import {
   useContext,
   useId,
 } from 'react';
+import CurrencyFormat from 'react-currency-format';
 import { useFormStatus } from 'react-dom';
 import { Controller, ControllerProps, FieldPath, FieldValues, FormProvider, useFormContext } from 'react-hook-form';
 import Button, { ButtonProps } from './Button';
@@ -154,6 +155,40 @@ export const TextField = forwardRef<HTMLInputElement, HTMLProps<HTMLInputElement
 
 TextField.displayName = 'TextField';
 
+export const MoneyField = forwardRef<
+  HTMLInputElement,
+  HTMLProps<HTMLInputElement> & {
+    value: string | number | (string & readonly string[]) | (number & readonly string[]) | undefined;
+    onValueChange?: (values: CurrencyFormat.Values) => void;
+  }
+>(({ className, name, value, onValueChange, ...props }, ref) => {
+  const numericValue = (Number(value) || 0) * 100;
+
+  return (
+    <>
+      <input type="hidden" name={name} value={numericValue} />
+
+      <FieldSlot className={className} ref={ref} {...props}>
+        <CurrencyFormat
+          thousandSeparator
+          prefix="$"
+          decimalScale={2}
+          allowNegative={false}
+          displayType="input"
+          type="text"
+          min={0}
+          placeholder="$0.00"
+          className=""
+          value={value}
+          onValueChange={onValueChange}
+        />
+      </FieldSlot>
+    </>
+  );
+});
+
+MoneyField.displayName = 'MoneyField';
+
 export const TextArea = forwardRef<HTMLTextAreaElement, HTMLProps<HTMLTextAreaElement>>(
   ({ className, ...props }, ref) => {
     const { invalid, error } = useFormField();
@@ -208,7 +243,7 @@ export const SaveBar = () => {
                 Descartar
               </Button>
 
-              <SubmitButton type="submit" className="font-semibold h-7 text-melrose-500">
+              <SubmitButton type="submit" className="font-semibold h-7 text-melrose-500" disabled={!formState.isValid}>
                 Guardar
               </SubmitButton>
             </div>
