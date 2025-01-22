@@ -1,8 +1,7 @@
 'use server';
 
-import db from '@db/index';
 import { GenericServerActionResponse } from '@types';
-import { signIn } from '@utils/auth';
+import { createClient } from '@utils/supabase/server';
 import { z } from 'zod';
 
 export const signin = async (
@@ -29,14 +28,20 @@ export const signin = async (
       },
     };
 
-  // 2. Verify if user is new
-  const match = await db.query.users.findFirst({
-    where: (users, { eq }) => eq(users.email, fields.email),
+  const supabase = await createClient();
+
+  const { error: authError } = await supabase.auth.signInWithOtp({
+    email: fields.email,
+    options: {
+      shouldCreateUser: false,
+      emailRedirectTo:
+        process.env.NODE_ENV === 'development'
+          ? 'http://app.localhost:3000/confirm'
+          : `https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN}/confirm`,
+    },
   });
 
-  if (!match) return { state: 'ERROR', error: { message: 'User with provided email does not exist' } };
-
-  signIn('resend', { email: fields.email, redirect: false });
+  if (authError) return { state: 'ERROR', error: { message: 'User with provided email does not exist' } };
 
   return { state: 'SUCCESS', data: { success: true } };
 };

@@ -1,4 +1,4 @@
-import { auth } from '@utils/auth';
+import { updateSession } from '@utils/supabase/middleware';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const config = {
@@ -15,7 +15,6 @@ export const config = {
 };
 
 export default async function middleware(req: NextRequest) {
-  const res = NextResponse.next();
   const url = req.nextUrl;
 
   // Get hostname of request (e.g. demo.vercel.pub, demo.localhost:3000)
@@ -31,26 +30,18 @@ export default async function middleware(req: NextRequest) {
 
   // Rewrites for app pages (dashboard)
   if (hostname == `app.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`) {
-    const session = await auth();
-
-    const authRoutes = ['/signin', '/signup', '/verify-email'];
-
-    // Unauthenticated users, go to signin
-    if (!session && !authRoutes.includes(pathname)) {
-      return NextResponse.redirect(new URL('/signin', req.url));
-    }
-
+    await updateSession(req);
     // Authenticated user is in signin, go to dashboard
-    if (session && authRoutes.includes(pathname)) {
-      return NextResponse.redirect(new URL('/', req.url));
-    }
+    // if (authRoutes.includes(pathname)) {
+    //   return NextResponse.redirect(new URL('/', req.url));
+    // }
 
     return NextResponse.rewrite(new URL(`/app${pathname === '/' ? '' : pathname}`, req.url));
   }
 
   // Rewrite for public site pages
   if (hostname === 'localhost:3000' || hostname === process.env.NEXT_PUBLIC_ROOT_DOMAIN) {
-    return res;
+    return NextResponse.next();
   }
 
   // Rewrite everything multi-tenant pages
