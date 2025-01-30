@@ -1,55 +1,38 @@
 import { timestamps } from '@db/utils';
-import { LocationPhone, LocationSchedule, StoreSocialLink } from '@types';
+import { createId } from '@paralleldrive/cuid2';
+import { StoreFeatures, StoreSocialLink } from '@types';
 import { relations } from 'drizzle-orm';
-import { index, integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
-import { users } from './auth';
+import { index, json, pgTable, text, uuid } from 'drizzle-orm/pg-core';
+import { websites } from './websites';
 
-export const stores = sqliteTable(
+export const stores = pgTable(
   'stores',
   {
     id: text('id')
       .primaryKey()
-      .$defaultFn(() => crypto.randomUUID()),
-    userId: text('userId')
-      .notNull()
-      .references(() => users.id, { onDelete: 'cascade' }),
-    name: text('name').notNull(),
+      .$defaultFn(() => createId()),
+    userId: uuid('user_id').notNull(),
+    name: text('name').notNull().unique(),
     category: text('category'),
+    tagline: text('tagline'),
     bio: text('bio'),
-    favicon: text('favicon'),
     logo: text('logo'),
-    primaryColor: text('primaryColor'),
-    socialLinks: text('socialLinks', { mode: 'json' }).$type<StoreSocialLink[]>(),
+    socialLinks: json('social_links').$type<StoreSocialLink[]>().default([]),
+    features: json('features').$type<StoreFeatures>().default({}),
     ...timestamps,
   },
   (store) => ({
-    userStoreIndex: index('userStoreIndex').on(store.userId),
-    uniqueStoreName: unique('uniqueStoreName').on(store.userId, store.name),
+    storeUserIndex: index('store_user_idx').on(store.userId),
   })
 );
 
-export const locations = sqliteTable('locations', {
-  id: text('id')
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  storeId: text('storeId')
-    .notNull()
-    .references(() => stores.id, { onDelete: 'cascade' }),
-  name: text('name'),
-  address: text('address').notNull(),
-  phones: text('phones', { mode: 'json' }).$type<LocationPhone[]>(),
-  isPrimary: integer('isPrimary', { mode: 'boolean' }).notNull().default(false),
-  schedule: text('schedule', { mode: 'json' }).$type<LocationSchedule[]>(),
-  ...timestamps,
-});
+/**
+ * Relations
+ */
 
-export const storesRelations = relations(stores, ({ many }) => ({
-  locations: many(locations),
-}));
-
-export const locationsRelations = relations(locations, ({ one, many }) => ({
-  store: one(stores, {
-    fields: [locations.storeId],
-    references: [stores.id],
+export const storeRelations = relations(stores, ({ one }) => ({
+  website: one(websites, {
+    fields: [stores.id],
+    references: [websites.storeId],
   }),
 }));

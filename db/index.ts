@@ -1,23 +1,15 @@
-import { createClient } from '@libsql/client';
-import { drizzle } from 'drizzle-orm/libsql/web';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
 import * as schema from './schema';
 
-if (!process.env.TURSO_DATABASE_NAME) {
-  throw new Error('TURSO_DATABASE_NAME is missing');
+if (!process.env.DATABASE_URL) {
+  throw new Error('DATABASE_URL is missing');
 }
 
-if (!process.env.TURSO_ORG) {
-  throw new Error('TURSO_ORG is missing');
-}
+const connectionString = process.env.DATABASE_URL;
 
-if (!process.env.TURSO_GROUP_AUTH_TOKEN) {
-  throw new Error('TURSO_GROUP_AUTH_TOKEN is missing');
-}
-// Create a client to interact with the parent database
-const client = createClient({
-  url: `libsql://${process.env.TURSO_DATABASE_NAME}-${process.env.TURSO_ORG}.turso.io`,
-  authToken: process.env.TURSO_GROUP_AUTH_TOKEN,
-});
+// Disable prefetch as it is not supported for "Transaction" pool mode
+export const client = postgres(connectionString, { prepare: false });
 
 const db = drizzle(client, { schema });
 

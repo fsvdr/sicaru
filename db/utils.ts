@@ -1,11 +1,19 @@
-import { sql } from 'drizzle-orm';
-import { text } from 'drizzle-orm/sqlite-core';
+import { timestamp } from 'drizzle-orm/pg-core';
 
 export const timestamps = {
-  createdAt: text('createdAt')
+  createdAt: timestamp('createdAt', {
+    mode: 'date',
+    precision: 3, // millisecond precision
+    withTimezone: true,
+  })
     .notNull()
-    .default(sql`DATETIME('now')`),
-  updatedAt: text('updatedAt')
+    .defaultNow(),
+  updatedAt: timestamp('updatedAt', {
+    mode: 'date',
+    precision: 3, // millisecond precision
+    withTimezone: true,
+  })
     .notNull()
-    .default(sql`DATETIME('now')`),
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 };

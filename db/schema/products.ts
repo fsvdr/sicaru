@@ -1,10 +1,9 @@
 import { timestamps } from '@db/utils';
 import { createId } from '@paralleldrive/cuid2';
-import { relations } from 'drizzle-orm';
-import { integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
+import { boolean, integer, json, pgTable, text, unique } from 'drizzle-orm/pg-core';
 import { stores } from './stores';
 
-export const products = sqliteTable(
+export const products = pgTable(
   'products',
   {
     id: text('id')
@@ -18,10 +17,10 @@ export const products = sqliteTable(
     description: text('description'),
     basePrice: integer('basePrice').notNull(),
     featuredImage: text('featuredImage'),
-    images: text('images', { mode: 'json' }).$type<string[]>(),
+    images: json('images').$type<string[]>().default([]),
     category: text('category'),
-    tags: text('tags', { mode: 'json' }).$type<string[]>(),
-    available: integer('available', { mode: 'boolean' }).notNull().default(true),
+    tags: json('tags').$type<string[]>().default([]),
+    available: boolean('available').notNull().default(true),
     ...timestamps,
   },
   (product) => ({
@@ -29,55 +28,3 @@ export const products = sqliteTable(
     uniqueProductSlug: unique('uniqueProductSlug').on(product.storeId, product.slug),
   })
 );
-
-export const productOptionGroups = sqliteTable('product_option_groups', {
-  id: text('id')
-    .primaryKey()
-    .$defaultFn(() => createId()),
-  productId: text('productId')
-    .notNull()
-    .references(() => products.id, { onDelete: 'cascade' }),
-  name: text('name').notNull(),
-  required: integer('required', { mode: 'boolean' }).notNull().default(false),
-  multiple: integer('multiple', { mode: 'boolean' }).notNull().default(false),
-  minChoices: integer('minChoices'),
-  maxChoices: integer('maxChoices'),
-  ...timestamps,
-});
-
-export const productOptionChoices = sqliteTable('product_option_choices', {
-  id: text('id')
-    .primaryKey()
-    .$defaultFn(() => createId()),
-  optionGroupId: text('optionGroupId')
-    .notNull()
-    .references(() => productOptionGroups.id, { onDelete: 'cascade' }),
-  name: text('name').notNull(),
-  price: integer('price').notNull(),
-  isDefault: integer('isDefault', { mode: 'boolean' }).notNull().default(false),
-  ...timestamps,
-});
-
-// Define relationships
-export const productsRelations = relations(products, ({ many, one }) => ({
-  store: one(stores, {
-    fields: [products.storeId],
-    references: [stores.id],
-  }),
-  optionGroups: many(productOptionGroups),
-}));
-
-export const productOptionGroupsRelations = relations(productOptionGroups, ({ many, one }) => ({
-  product: one(products, {
-    fields: [productOptionGroups.productId],
-    references: [products.id],
-  }),
-  choices: many(productOptionChoices),
-}));
-
-export const productOptionChoicesRelations = relations(productOptionChoices, ({ one }) => ({
-  optionGroup: one(productOptionGroups, {
-    fields: [productOptionChoices.optionGroupId],
-    references: [productOptionGroups.id],
-  }),
-}));
