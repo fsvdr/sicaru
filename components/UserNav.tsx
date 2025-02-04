@@ -1,8 +1,9 @@
 'use client';
 
 import { useIsMobile } from '@lib/hooks/use-mobile';
+import { User } from '@supabase/supabase-js';
+import { createClient } from '@utils/supabase/client';
 import { ChevronsUpDown, LogOut, Sparkles, UserCircle2 } from 'lucide-react';
-import { Session } from 'next-auth';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,14 +14,16 @@ import {
   DropdownMenuTrigger,
 } from './generic/DropdownMenu';
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from './generic/Sidebar';
-import { signOut } from 'next-auth/react';
 
 interface UserNavProps {
-  user: Session['user'];
+  user: User;
 }
 
 const UserNav = ({ user }: UserNavProps) => {
+  const supabase = createClient();
   const isMobile = useIsMobile();
+
+  const { firstName, lastName } = user.user_metadata;
 
   return (
     <SidebarMenu>
@@ -33,14 +36,14 @@ const UserNav = ({ user }: UserNavProps) => {
             >
               <div className="flex items-center justify-center text-white rounded-lg aspect-square size-8 bg-melrose-500">
                 <span>
-                  {user.firstName?.[0]}
-                  {user.lastName?.[0]}
+                  {firstName?.[0]}
+                  {lastName?.[0]}
                 </span>
               </div>
 
               <div className="grid flex-1 text-sm leading-tight text-left">
                 <span className="font-semibold truncate">
-                  {user.firstName} {user.lastName}
+                  {firstName} {lastName}
                 </span>
                 <span className="text-xs truncate">{user.email}</span>
               </div>
@@ -59,14 +62,14 @@ const UserNav = ({ user }: UserNavProps) => {
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <div className="flex items-center justify-center text-white rounded-lg aspect-square size-8 bg-melrose-500">
                   <span>
-                    {user.firstName?.[0]}
-                    {user.lastName?.[0]}
+                    {firstName?.[0]}
+                    {lastName?.[0]}
                   </span>
                 </div>
 
                 <div className="grid flex-1 text-sm leading-tight text-left">
                   <span className="font-semibold truncate">
-                    {user.firstName} {user.lastName}
+                    {firstName} {lastName}
                   </span>
                   <span className="text-xs truncate">{user.email}</span>
                 </div>
@@ -93,7 +96,7 @@ const UserNav = ({ user }: UserNavProps) => {
 
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem onClick={() => signOut()}>
+            <DropdownMenuItem onClick={() => supabase.auth.signOut()}>
               <LogOut />
               Cerrar sesión
             </DropdownMenuItem>

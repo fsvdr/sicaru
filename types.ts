@@ -1,3 +1,5 @@
+import { createClient } from '@utils/supabase/server';
+
 export enum GenericAPIErrorCode {
   UNKNOWN_ERROR,
   UNABLE_TO_AUTHENTICATE,
@@ -26,6 +28,8 @@ export type GenericServerActionResponse<T> =
       data: T;
       error?: never;
     };
+
+export type Database = ReturnType<typeof createClient>;
 
 export type StoreSocialLink = {
   url: string;

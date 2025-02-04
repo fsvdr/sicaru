@@ -1,12 +1,12 @@
 'use server';
 
+import db from '@db/index';
 import { products } from '@db/schema';
 import { ProductDAO } from '@lib/dao/ProductDAO';
 import { getImageUploadPayload, UploadsDAO } from '@lib/dao/UploadsDAO';
 import { GenericServerActionResponse } from '@types';
-import { auth } from '@utils/auth';
-import { getDatabaseClient } from '@utils/db';
 import { resolveActiveStore } from '@utils/resolveActiveStore';
+import { createClient } from '@utils/supabase/server';
 import toJSON from '@utils/toJSON';
 import { revalidatePath } from 'next/cache';
 import { productSchema } from './types';
@@ -28,9 +28,10 @@ export const upsertProduct = async (
       error: { message: 'Invalid form data', data: { errors: error.flatten().fieldErrors } },
     };
 
-  const db = await getDatabaseClient();
-  const session = await auth();
-  const user = session?.user;
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   const { activeStore } = await resolveActiveStore();
 
   if (!user?.id || !activeStore?.id) return { state: 'ERROR', error: { message: 'Unauthenticated user' } };

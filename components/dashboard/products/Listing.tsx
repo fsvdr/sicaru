@@ -1,14 +1,13 @@
 import Badge from '@components/generic/Badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@components/generic/Table';
+import db from '@db/index';
 import { ProductDAO } from '@lib/dao/ProductDAO';
-import { getDatabaseClient } from '@utils/db';
 import { formatCurrency } from '@utils/formatters';
 import { ChevronRight } from 'lucide-react';
 import Link from 'next/dist/client/link';
 import Image from 'next/image';
 
 const ProductsListing = async ({ storeId }: { storeId: string }) => {
-  const db = await getDatabaseClient();
   const products = await ProductDAO.getStoreProducts({ db: db, storeId: storeId });
 
   return (

@@ -32,9 +32,9 @@ const StoreSwitcher = async () => {
                   'flex items-center justify-center text-white rounded-lg aspect-square size-8 bg-melrose-500'
                 )}
               >
-                {activeStore?.favicon ? (
+                {activeStore?.website.favicon ? (
                   <Image
-                    src={activeStore.favicon}
+                    src={activeStore.website.favicon}
                     alt={activeStore.name}
                     width={32}
                     height={32}
@@ -59,10 +59,16 @@ const StoreSwitcher = async () => {
             {stores.map((store) => (
               <DropdownMenuItem key={store.id}>
                 <div className="flex items-center justify-center overflow-hidden border rounded-md size-6">
-                  {store.favicon && (
-                    <Image src={store.favicon} alt={store.name} width={24} height={24} className="size-6 shrink-0" />
+                  {store.website.favicon && (
+                    <Image
+                      src={store.website.favicon}
+                      alt={store.name}
+                      width={24}
+                      height={24}
+                      className="size-6 shrink-0"
+                    />
                   )}
-                  {!store.favicon && <span>{store.name[0]}</span>}
+                  {!store.website.favicon && <span>{store.name[0]}</span>}
                 </div>
 
                 {store.name}

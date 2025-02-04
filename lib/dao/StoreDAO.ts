@@ -1,24 +1,25 @@
-import { locations as locationsTable, stores } from '@db/schema';
-import { Database } from '@types';
+import db from '@db/index';
+import { stores, websites as websiteTable } from '@db/schema';
+import { slugify } from '@utils/slugify';
 import { and, eq } from 'drizzle-orm';
 
 export class StoreDAO {
-  static async getStore({ db, userId, storeId }: { db: Database; userId: string; storeId: string }) {
+  static async getStore({ userId, storeId }: { userId: string; storeId: string }) {
     const store = await db.query.stores.findFirst({
       where: and(eq(stores.id, storeId), eq(stores.userId, userId)),
       with: {
-        locations: true,
+        website: true,
       },
     });
 
     return store ? this.cleanupStoreFields(store) : undefined;
   }
 
-  static async getAllStores({ db, userId }: { db: Database; userId: string }) {
+  static async getAllStores({ userId }: { userId: string }) {
     const allStores = await db.query.stores.findMany({
       where: eq(stores.userId, userId),
       with: {
-        locations: true,
+        website: true,
       },
     });
 
@@ -26,15 +27,11 @@ export class StoreDAO {
   }
 
   static async createStore({
-    db,
     userId,
     fields,
-    locations,
   }: {
-    db: Database;
     userId: string;
     fields: Omit<typeof stores.$inferInsert, 'id' | 'userId'>;
-    locations?: Omit<typeof locationsTable.$inferInsert, 'storeId'>[];
   }) {
     return await db.transaction(async (tx) => {
       const [newStore] = await tx
@@ -45,19 +42,19 @@ export class StoreDAO {
         })
         .returning();
 
-      if (locations?.length) {
-        await tx.insert(locationsTable).values(
-          locations.map((location) => ({
-            ...location,
-            storeId: newStore.id,
-          }))
-        );
-      }
+      const [newWebsite] = await tx
+        .insert(websiteTable)
+        .values({
+          storeId: newStore.id,
+          subdomain: slugify(newStore.name),
+          template: 'SC01:NUTRITION_LABEL',
+        })
+        .returning();
 
       const store = await tx.query.stores.findFirst({
         where: and(eq(stores.id, newStore.id), eq(stores.userId, userId)),
         with: {
-          locations: true,
+          website: true,
         },
       });
 
@@ -66,17 +63,13 @@ export class StoreDAO {
   }
 
   static async updateStore({
-    db,
     userId,
     storeId,
     fields,
-    locations,
   }: {
-    db: Database;
     userId: string;
     storeId: string;
     fields: Omit<typeof stores.$inferInsert, 'id' | 'userId'>;
-    locations?: Omit<typeof locationsTable.$inferInsert, 'storeId'>[];
   }) {
     return await db.transaction(async (tx) => {
       await tx
@@ -84,20 +77,10 @@ export class StoreDAO {
         .set(fields)
         .where(and(eq(stores.userId, userId), eq(stores.id, storeId)));
 
-      if (locations?.length) {
-        await tx.delete(locationsTable).where(eq(locationsTable.storeId, storeId));
-        await tx.insert(locationsTable).values(
-          locations.map((location) => ({
-            ...location,
-            storeId,
-          }))
-        );
-      }
-
       const store = await tx.query.stores.findFirst({
         where: and(eq(stores.id, storeId), eq(stores.userId, userId)),
         with: {
-          locations: true,
+          website: true,
         },
       });
 
@@ -105,14 +88,15 @@ export class StoreDAO {
     });
   }
 
-  static cleanupStoreFields(store: typeof stores.$inferSelect & { locations: (typeof locationsTable.$inferSelect)[] }) {
-    const { locations, userId, createdAt, updatedAt, ...rest } = store;
+  static cleanupStoreFields(store: typeof stores.$inferSelect & { website: typeof websiteTable.$inferSelect }) {
+    const { website, userId, createdAt: ca, updatedAt: ua, ...storeFields } = store;
+    const { storeId, createdAt, updatedAt, ...websiteFields } = store.website;
 
     return {
-      ...rest,
-      locations: store.locations.map(({ id, storeId, createdAt, updatedAt, ...location }) => ({
-        ...location,
-      })),
+      ...storeFields,
+      website: {
+        ...websiteFields,
+      },
     };
   }
 }

@@ -1,5 +1,5 @@
+import { createClient } from '@utils/supabase/server';
 import { Globe, Grid2X2, Home, PackageIcon, ShoppingBag, Ticket, Users } from 'lucide-react';
-import { Session } from 'next-auth';
 import Link from 'next/link';
 import {
   Sidebar,
@@ -54,7 +54,12 @@ const navigation = [
   },
 ];
 
-const AppSidebar = ({ user }: { user: Session['user'] }) => {
+const AppSidebar = async () => {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getUser();
+
+  const user = data.user;
+
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -108,9 +113,7 @@ const AppSidebar = ({ user }: { user: Session['user'] }) => {
         ))}
       </SidebarContent>
 
-      <SidebarFooter>
-        <UserNav user={user} />
-      </SidebarFooter>
+      <SidebarFooter>{user && <UserNav user={user} />}</SidebarFooter>
     </Sidebar>
   );
 };

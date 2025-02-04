@@ -8,10 +8,8 @@ import { useFormState } from 'react-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { updateStoreDetails } from '../../../app/(admin)/app/(dashboard)/actions';
-import BrandFieldset from './BrandFieldset';
-import LocationsFieldset, { createDefaultSchedule } from './LocationsFieldset';
 import ProfileFieldset from './ProfileFieldset';
-import { dayScheduleSchema, storeDetailsSchema } from './types';
+import { storeDetailsSchema } from './types';
 
 const StoreDetailsForm = ({ store }: { store?: Awaited<ReturnType<typeof StoreDAO.getStore>> }) => {
   const [response, handleSubmit] = useFormState(updateStoreDetails, { state: 'PENDING' });
@@ -33,10 +31,6 @@ const StoreDetailsForm = ({ store }: { store?: Awaited<ReturnType<typeof StoreDA
         <input type="hidden" name="id" value={store?.id ?? ''} />
 
         <ProfileFieldset form={form} />
-
-        <BrandFieldset form={form} />
-
-        <LocationsFieldset form={form} />
       </form>
     </Form>
   );
@@ -44,7 +38,6 @@ const StoreDetailsForm = ({ store }: { store?: Awaited<ReturnType<typeof StoreDA
 
 export default StoreDetailsForm;
 
-export type DayScheduleInput = z.infer<typeof dayScheduleSchema>;
 export type StoreDetailsInput = z.infer<typeof storeDetailsSchema>;
 
 const getFormValuesFromStore = (store: Awaited<ReturnType<typeof StoreDAO.getStore>>) => {
@@ -52,18 +45,10 @@ const getFormValuesFromStore = (store: Awaited<ReturnType<typeof StoreDAO.getSto
     id: store?.id ?? '',
     name: store?.name ?? '',
     category: store?.category ?? '',
+    tagline: store?.tagline ?? '',
     bio: store?.bio ?? '',
-    socialLinks: store?.socialLinks ?? [],
-    favicon: store?.favicon ?? '',
     logo: store?.logo ?? '',
-    primaryColor: store?.primaryColor ?? '',
-    locations: store
-      ? store.locations.map((location) => ({
-          ...location,
-          name: location.name ?? '',
-          phones: location.phones ?? [],
-          schedule: location.schedule ?? createDefaultSchedule(),
-        })) ?? []
-      : [{ address: '', phones: [], schedule: createDefaultSchedule(), isPrimary: true, name: '' }],
+    socialLinks: store?.socialLinks ?? [],
+    features: store?.features ?? {},
   };
 };

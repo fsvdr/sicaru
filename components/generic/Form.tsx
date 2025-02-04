@@ -217,11 +217,14 @@ SubmitButton.displayName = 'SubmitButton';
 
 export const SaveBar = () => {
   const { state, isMobile } = useSidebar();
-  const { formState, reset } = useFormContext();
+  const {
+    formState: { isDirty, isValid },
+    reset,
+  } = useFormContext();
 
   return (
     <AnimatePresence>
-      {formState.isDirty && (
+      {isDirty && (
         <motion.div
           initial={isMobile ? { y: 100 } : { y: -100 }}
           animate={{ y: 0 }}
@@ -243,7 +246,7 @@ export const SaveBar = () => {
                 Descartar
               </Button>
 
-              <SubmitButton type="submit" className="font-semibold h-7 text-melrose-500" disabled={!formState.isValid}>
+              <SubmitButton type="submit" className="font-semibold h-7 text-melrose-500" disabled={!isValid}>
                 Guardar
               </SubmitButton>
             </div>
