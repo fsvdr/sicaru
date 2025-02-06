@@ -1,5 +1,5 @@
 import { createClient } from '@utils/supabase/server';
-import { Globe, Grid2X2, Home, PackageIcon, ShoppingBag, Ticket, Users } from 'lucide-react';
+import { Globe, Home, PackageIcon } from 'lucide-react';
 import Link from 'next/link';
 import {
   Sidebar,
@@ -15,44 +15,6 @@ import {
 } from './generic/Sidebar';
 import StoreSwitcher from './StoreSwitcher/index';
 import UserNav from './UserNav';
-
-const navigation = [
-  {
-    title: 'Catálogo',
-    items: [
-      {
-        title: 'Productos',
-        url: '/products',
-        icon: <PackageIcon />,
-      },
-      {
-        title: 'Colecciones',
-        url: '/collections',
-        icon: <Grid2X2 />,
-      },
-      {
-        title: 'Cupones',
-        url: '/coupons',
-        icon: <Ticket />,
-      },
-    ],
-  },
-  {
-    title: 'Ventas',
-    items: [
-      {
-        title: 'Órdenes',
-        url: '/orders',
-        icon: <ShoppingBag />,
-      },
-      {
-        title: 'Clientes',
-        url: '/customers',
-        icon: <Users />,
-      },
-    ],
-  },
-];
 
 const AppSidebar = async () => {
   const supabase = await createClient();
@@ -78,39 +40,35 @@ const AppSidebar = async () => {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
 
+        <SidebarGroup>
+          <SidebarGroupLabel className="gap-2">Sitio web</SidebarGroupLabel>
+
+          <SidebarGroupContent>
+            <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="Sitio web" activePathname="/website">
+                <SidebarMenuButton asChild tooltip="Dominio" activePathname="/website">
                   <Link href="/website">
                     <Globe />
-                    Sitio web
+                    General
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Catálogo" activePathname="/website/listing">
+                  <Link href="/website/listing">
+                    <PackageIcon />
+                    Catálogo
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
-        {navigation.map((group) => (
-          <SidebarGroup key={group.title}>
-            <SidebarGroupLabel>{group.title}</SidebarGroupLabel>
-
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {group.items.map((item) => (
-                  <SidebarMenuItem key={item.url}>
-                    <SidebarMenuButton asChild tooltip={item.title} activePathname={item.url}>
-                      <Link className="flex gap-2" href={item.url}>
-                        {item.icon}
-                        {item.title}
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
       </SidebarContent>
 
       <SidebarFooter>{user && <UserNav user={user} />}</SidebarFooter>

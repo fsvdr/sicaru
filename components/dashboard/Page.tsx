@@ -1,8 +1,8 @@
 import cn from '@utils/cn';
 import { HTMLAttributes, ReactNode } from 'react';
 
-export const DashboardPage = ({ children }: { children: ReactNode }) => {
-  return <div className="flex flex-col gap-8 pb-20">{children}</div>;
+export const DashboardPage = ({ children, className }: { className?: string; children: ReactNode }) => {
+  return <div className={cn('flex flex-col gap-8 pb-20', className)}>{children}</div>;
 };
 
 export const PageHeader = ({ children }: { children: ReactNode }) => {
@@ -20,13 +20,15 @@ export const PageTitle = ({
 export const PageAnnotatedSection = ({
   title,
   description,
+  compact = false,
   ...props
 }: HTMLAttributes<HTMLDivElement> & {
   title?: string;
   description?: string;
+  compact?: boolean;
 }) => {
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-[240px_1fr] md:gap-6 lg:gap-12">
+    <div className={cn('grid grid-cols-1 gap-4 md:gap-6 lg:gap-x-12', !compact && 'md:grid-cols-[240px_1fr]')}>
       <div>
         <h2 className="text-sm font-medium md:text-lg">{title}</h2>
         <p className="text-sm text-muted-foreground">{description}</p>

@@ -7,7 +7,7 @@ const DashboardHomePage = async () => {
   const { activeStore, stores } = await resolveActiveStore();
 
   return (
-    <DashboardPage>
+    <DashboardPage className="max-w-4xl gap-4 p-4 pt-0 mx-auto">
       <PageHeader>
         <PageTitle>Detalles generales</PageTitle>
       </PageHeader>

@@ -2,6 +2,7 @@ import db from '@db/index';
 import { stores, websites as websiteTable } from '@db/schema';
 import { slugify } from '@utils/slugify';
 import { and, eq } from 'drizzle-orm';
+import { WebsiteDAO } from './WebsiteDAO';
 
 export class StoreDAO {
   static async getStore({ userId, storeId }: { userId: string; storeId: string }) {
@@ -90,13 +91,10 @@ export class StoreDAO {
 
   static cleanupStoreFields(store: typeof stores.$inferSelect & { website: typeof websiteTable.$inferSelect }) {
     const { website, userId, createdAt: ca, updatedAt: ua, ...storeFields } = store;
-    const { storeId, createdAt, updatedAt, ...websiteFields } = store.website;
 
     return {
       ...storeFields,
-      website: {
-        ...websiteFields,
-      },
+      website: WebsiteDAO.cleanupWebsiteFields(website),
     };
   }
 }
