@@ -30,7 +30,11 @@ export default async function middleware(req: NextRequest) {
 
   // Rewrites for app pages (dashboard)
   if (hostname == `app.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`) {
-    await updateSession(req);
+    const sessionResponse = await updateSession(req);
+
+    if (sessionResponse.headers.has('location')) {
+      return sessionResponse;
+    }
     // Authenticated user is in signin, go to dashboard
     // if (authRoutes.includes(pathname)) {
     //   return NextResponse.redirect(new URL('/', req.url));
