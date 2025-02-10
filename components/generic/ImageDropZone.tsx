@@ -1,4 +1,5 @@
 import cn from '@utils/cn';
+import { getPublicUrl } from '@utils/getPublicUrl';
 import { UploadCloud, X } from 'lucide-react';
 import { ChangeEvent, DragEvent, useCallback, useState } from 'react';
 
@@ -13,6 +14,7 @@ interface ImageDropZoneProps {
 
 const ImageDropZone = ({ name, width, height, defaultImageUrl, className, onChange }: ImageDropZoneProps) => {
   const [image, setImage] = useState<string | undefined>(defaultImageUrl);
+
   const [isDragging, setIsDragging] = useState(false);
 
   const handleDrag = useCallback((e: DragEvent<HTMLDivElement>) => {
@@ -85,7 +87,11 @@ const ImageDropZone = ({ name, width, height, defaultImageUrl, className, onChan
 
       {image ? (
         <>
-          <img src={image} alt="Uploaded preview" className="object-cover w-full h-full rounded-lg" />
+          <img
+            src={image.startsWith('data:image/') ? image : getPublicUrl(image)}
+            alt="Uploaded preview"
+            className="object-cover w-full h-full rounded-lg"
+          />
 
           <div className="absolute right-1 top-1">
             <button onClick={handleRemove} className="p-1 rounded bg-melrose-100" aria-label="Remove image">

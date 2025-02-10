@@ -4,6 +4,7 @@ import { storeDetailsSchema } from '@components/dashboard/store/types';
 import { stores } from '@db/schema';
 import { StoreDAO } from '@lib/dao/StoreDAO';
 import { getImageUploadPayload, UploadsDAO } from '@lib/dao/UploadsDAO';
+import { createId } from '@paralleldrive/cuid2';
 import { GenericServerActionResponse } from '@types';
 import { CookieKeys } from '@utils/CookieKeys';
 import { createClient } from '@utils/supabase/server';
@@ -38,16 +39,28 @@ export const updateStoreDetails = async (
     ...fields,
   };
 
+  const currentStore = id ? await StoreDAO.getStore({ userId: user.id, storeId: id }) : null;
+
   const uploads = [];
+  const deletes = [];
 
   if (fields.logo?.startsWith('data:image/'))
-    uploads.push(getImageUploadPayload({ userId: user.id, path: '/logo', name: 'logo', image: fields.logo }));
+    uploads.push(getImageUploadPayload({ bucket: user.id, id: 'logo', fileName: createId(), file: fields.logo }));
 
   if (uploads.length) {
     const uploaded = await UploadsDAO.uploadImages(uploads);
 
     if (uploaded.logo) storeFields.logo = uploaded.logo;
+
+    // Replacing images, delete old images
+    if (currentStore?.logo && uploaded.logo) deletes.push(currentStore.logo);
   }
+
+  // Removing images
+  if (currentStore?.logo && !fields.logo) deletes.push(currentStore.logo);
+
+  console.log('[SC]', { deletes });
+  if (deletes.length) await UploadsDAO.deleteImages(deletes);
 
   const store = !id
     ? await StoreDAO.createStore({ userId: user.id!, fields: storeFields })

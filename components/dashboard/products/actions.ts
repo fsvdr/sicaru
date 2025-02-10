@@ -4,6 +4,7 @@ import db from '@db/index';
 import { products } from '@db/schema';
 import { ProductDAO } from '@lib/dao/ProductDAO';
 import { getImageUploadPayload, UploadsDAO } from '@lib/dao/UploadsDAO';
+import { createId } from '@paralleldrive/cuid2';
 import { GenericServerActionResponse } from '@types';
 import { resolveActiveStore } from '@utils/resolveActiveStore';
 import { createClient } from '@utils/supabase/server';
@@ -47,10 +48,10 @@ export const upsertProduct = async (
   if (fields.featuredImage?.startsWith('data:image/'))
     uploads.push(
       getImageUploadPayload({
-        userId: user.id,
-        path: `${activeStore.id}/products/${fields.slug}`,
-        name: fields.slug,
-        image: fields.featuredImage,
+        bucket: user.id,
+        id: fields.slug,
+        fileName: createId(),
+        file: fields.featuredImage,
       })
     );
 
@@ -59,10 +60,10 @@ export const upsertProduct = async (
       if (image.startsWith('data:image/'))
         uploads.push(
           getImageUploadPayload({
-            userId: user.id!,
-            path: `${activeStore.id}/products/${fields.slug}-${index}`,
-            name: `${fields.slug}-${index}`,
-            image,
+            bucket: user.id!,
+            id: `${activeStore.id}/products/${fields.slug}-${index}`,
+            fileName: createId(),
+            file: image,
           })
         );
     });

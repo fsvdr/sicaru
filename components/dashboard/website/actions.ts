@@ -41,20 +41,22 @@ export const updateWebsiteDetails = async (
   const { id, storeId, ...fields } = data;
 
   const uploads = [];
+  const deletes = [];
 
   // Handle general website slice
   if (slice === 'general') {
     const sliceFields = fields as z.infer<typeof websiteGeneralSchemaSlice>;
+    const currentWebsite = await WebsiteDAO.getWebsiteImages(body.id);
 
     if (sliceFields.coverImage?.startsWith('data:image/')) {
       const id = createId();
 
       uploads.push(
         getImageUploadPayload({
-          userId: user.id,
-          path: `/${id}`,
-          name: 'coverImage',
-          image: sliceFields.coverImage,
+          bucket: user.id,
+          id: 'coverImage',
+          fileName: createId(),
+          file: sliceFields.coverImage,
         })
       );
     }
@@ -64,10 +66,10 @@ export const updateWebsiteDetails = async (
 
       uploads.push(
         getImageUploadPayload({
-          userId: user.id,
-          path: `/${id}`,
-          name: 'favicon',
-          image: sliceFields.favicon,
+          bucket: user.id,
+          id: 'favicon',
+          fileName: createId(),
+          file: sliceFields.favicon,
         })
       );
     }
@@ -77,7 +79,18 @@ export const updateWebsiteDetails = async (
 
       if (uploaded.coverImage) sliceFields.coverImage = uploaded.coverImage;
       if (uploaded.favicon) sliceFields.favicon = uploaded.favicon;
+
+      // Replacing images, delete old images
+      if (currentWebsite?.coverImage && uploaded.coverImage) deletes.push(currentWebsite.coverImage);
+      if (currentWebsite?.favicon && uploaded.favicon) deletes.push(currentWebsite.favicon);
     }
+
+    // Removing images
+    if (currentWebsite?.coverImage && !sliceFields.coverImage) deletes.push(currentWebsite.coverImage);
+    if (currentWebsite?.favicon && !sliceFields.favicon) deletes.push(currentWebsite.favicon);
+
+    console.log('[SC]', { deletes });
+    if (deletes.length) await UploadsDAO.deleteImages(deletes);
 
     const website = await WebsiteDAO.updateWebsite({
       storeId: body.storeId,

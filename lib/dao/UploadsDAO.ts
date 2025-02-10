@@ -1,47 +1,27 @@
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
-
-if (!process.env.DO_SPACES_KEY || !process.env.DO_SPACES_SECRET) {
-  throw new Error('DO_SPACES_ENDPOINT,DO_SPACES_KEY and DO_SPACES_SECRET must be set');
-}
-
-const s3 = new S3Client({
-  region: 'nyc3',
-  endpoint: `https://${process.env.DO_SPACES_ENDPOINT}`,
-  credentials: {
-    accessKeyId: process.env.DO_SPACES_KEY,
-    secretAccessKey: process.env.DO_SPACES_SECRET,
-  },
-});
+import { createClient } from '@utils/supabase/server';
 
 export class UploadsDAO {
   static async uploadImages(images: ImageUploadPayload[]) {
+    const supabase = await createClient();
+
     const uploads = images.map(async (image) => {
-      try {
-        const buffer = Buffer.from(image.file, 'base64');
-        const filename = `${image.path}.${image.fileType.split('/')[1]}`;
+      const buffer = Buffer.from(image.file, 'base64');
+      const filename = `${image.bucket}/${image.fileName}.${image.fileType.split('/')[1]}`;
 
-        const upload = new PutObjectCommand({
-          Bucket: process.env.DO_SPACES_BUCKET,
-          Key: filename,
-          Body: buffer,
-          ACL: 'public-read',
-          ContentType: image.fileType,
-        });
+      const { error } = await supabase.storage.from('assets').upload(filename, buffer, {
+        contentType: image.fileType,
+        upsert: true,
+      });
 
-        await s3.send(upload);
-
-        const url = `https://${process.env.DO_SPACES_BUCKET}.${process.env.DO_SPACES_ENDPOINT}/${
-          filename.startsWith('/') ? filename.slice(1) : filename
-        }`;
-
-        return {
-          name: image.name,
-          url,
-        };
-      } catch (error) {
-        console.error(`[SC] Error uploading image ${image.name}`, error);
+      if (error) {
+        console.error(`[SC] Error uploading image ${image.id}`, error);
         return null;
       }
+
+      return {
+        id: image.id,
+        url: filename,
+      };
     });
 
     const urls = await Promise.all(uploads);
@@ -49,34 +29,44 @@ export class UploadsDAO {
     return urls
       .filter((url) => url !== null)
       .reduce((acc, image) => {
-        acc[image.name] = image.url;
+        acc[image.id] = image.url;
         return acc;
       }, {} as { [name: string]: string });
+  }
+
+  static async deleteImages(filenames: string[]) {
+    const supabase = await createClient();
+
+    const { error } = await supabase.storage.from('assets').remove(filenames);
+
+    return error;
   }
 }
 
 type ImageUploadPayload = {
-  name: string;
-  path: string;
+  bucket: string;
+  id: string;
   file: string;
+  fileName: string;
   fileType: string;
 };
 
 export const getImageUploadPayload = ({
-  userId,
-  path,
-  name,
-  image,
+  bucket,
+  id,
+  fileName,
+  file,
 }: {
-  userId: string;
-  path: string;
-  name: string;
-  image: string;
+  bucket: string;
+  id: string;
+  fileName: string;
+  file: string;
 }): ImageUploadPayload => {
   return {
-    name,
-    path: `${userId}/${path.startsWith('/') ? path.slice(1) : path}`,
-    file: image.split(',')[1],
-    fileType: image.split(';')[0].split(':')[1],
+    bucket,
+    id,
+    file: file.split(',')[1],
+    fileName,
+    fileType: file.split(';')[0].split(':')[1],
   };
 };

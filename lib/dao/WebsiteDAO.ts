@@ -26,6 +26,18 @@ export class WebsiteDAO {
     });
   }
 
+  static async getWebsiteImages(websiteId: string) {
+    const website = await db.query.websites.findFirst({
+      where: eq(websiteTable.id, websiteId),
+      columns: {
+        coverImage: true,
+        favicon: true,
+      },
+    });
+
+    return website;
+  }
+
   static cleanupWebsiteFields(website: typeof websiteTable.$inferSelect) {
     const { createdAt: ca, updatedAt: ua, ...websiteFields } = website;
 

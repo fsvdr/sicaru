@@ -6,6 +6,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: `${process.env.DO_SPACES_BUCKET}.${process.env.DO_SPACES_ENDPOINT}`,
       },
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
+      },
     ],
   },
   webpack(config) {

@@ -1,4 +1,5 @@
 import cn from '@utils/cn';
+import { getPublicUrl } from '@utils/getPublicUrl';
 import { resolveActiveStore } from '@utils/resolveActiveStore';
 import { ChevronsUpDown, Plus, ShoppingBag } from 'lucide-react';
 import Image from 'next/image';
@@ -14,6 +15,8 @@ import StoreSwitcherDropdown from './Dropdown';
 
 const StoreSwitcher = async () => {
   const { activeStore, stores } = await resolveActiveStore();
+
+  const faviconUrl = getPublicUrl(activeStore?.website.favicon ?? undefined);
 
   return (
     <SidebarMenu>
@@ -32,10 +35,10 @@ const StoreSwitcher = async () => {
                   'flex items-center justify-center text-white rounded-lg aspect-square size-8 bg-melrose-500'
                 )}
               >
-                {activeStore?.website.favicon ? (
+                {faviconUrl ? (
                   <Image
-                    src={activeStore.website.favicon}
-                    alt={activeStore.name}
+                    src={faviconUrl}
+                    alt={activeStore!.name}
                     width={32}
                     height={32}
                     className="rounded-lg size-8"
