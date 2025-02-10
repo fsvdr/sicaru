@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { StoreDAO } from '@lib/dao/StoreDAO';
 import { useEffect } from 'react';
 import { useFormState } from 'react-dom';
-import { useForm } from 'react-hook-form';
+import { DefaultValues, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { updateStoreDetails } from '../../../app/(admin)/app/(dashboard)/actions';
 import ProfileFieldset from './ProfileFieldset';
@@ -40,7 +40,9 @@ export default StoreDetailsForm;
 
 export type StoreDetailsInput = z.infer<typeof storeDetailsSchema>;
 
-const getFormValuesFromStore = (store: Awaited<ReturnType<typeof StoreDAO.getStore>>) => {
+const getFormValuesFromStore = (
+  store: Awaited<ReturnType<typeof StoreDAO.getStore>>
+): DefaultValues<StoreDetailsInput> => {
   return {
     id: store?.id ?? '',
     name: store?.name ?? '',

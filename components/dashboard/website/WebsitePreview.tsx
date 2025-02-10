@@ -3,9 +3,9 @@
 import { Form, SaveBar } from '@components/generic/Form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { WebsiteDAO } from '@lib/dao/WebsiteDAO';
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { useFormState } from 'react-dom';
-import { useForm, UseFormProps } from 'react-hook-form';
+import { DefaultValues, useForm } from 'react-hook-form';
 import { updateWebsiteDetails } from './actions';
 import { websiteDetailsSchema } from './types';
 import WebsiteFormProvider, { WebsiteDetailsInput } from './WebsiteFormProvider';
@@ -23,6 +23,10 @@ const WebsitePreview = ({
     resolver: zodResolver(websiteDetailsSchema),
     defaultValues: getDefaultValues(website),
   });
+
+  useEffect(() => {
+    form.reset(getDefaultValues(website));
+  }, [website]);
 
   return (
     <div className="flex-1 grid grid-cols-[28rem_1fr]">
@@ -48,7 +52,7 @@ export default WebsitePreview;
 
 const getDefaultValues = (
   website: ReturnType<typeof WebsiteDAO.cleanupWebsiteFields>
-): UseFormProps<WebsiteDetailsInput>['defaultValues'] => {
+): DefaultValues<WebsiteDetailsInput> => {
   return {
     ...website,
     customDomain: website.customDomain ?? '',
