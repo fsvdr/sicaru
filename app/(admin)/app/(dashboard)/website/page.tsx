@@ -2,6 +2,7 @@
 
 import { PageAnnotatedSection } from '@components/dashboard/Page';
 import { useWebsiteForm } from '@components/dashboard/website/WebsiteFormProvider';
+import { useSubdomainAvailability } from '@components/dashboard/website/hooks/useSubdomainAvailability';
 import { Card, CardContent } from '@components/generic/Card';
 import {
   FormControl,
@@ -14,9 +15,20 @@ import {
   TextField,
 } from '@components/generic/Form';
 import ImageDropZone from '@components/generic/ImageDropZone';
+import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
 
 const WebsiteConfigurationPage = () => {
   const { form } = useWebsiteForm();
+
+  const originalSubdomain = form.formState.defaultValues?.subdomain;
+  const subdomain = form.watch('subdomain');
+
+  const { isChecking, isAvailable, validationError } = useSubdomainAvailability(subdomain, {
+    originalValue: originalSubdomain,
+    setError: form.setError,
+    clearErrors: form.clearErrors,
+    trigger: form.trigger,
+  });
 
   return (
     <>
@@ -29,6 +41,8 @@ const WebsiteConfigurationPage = () => {
       >
         <Card className="bg-gray-50/50">
           <CardContent className="flex flex-col gap-2 p-4">
+            <pre>{JSON.stringify({ errors: form.formState.errors, isValid: form.formState.isValid }, null, 2)}</pre>
+
             <FormField
               control={form.control}
               name="subdomain"
@@ -43,10 +57,34 @@ const WebsiteConfigurationPage = () => {
                   <FormControl>
                     <div className="flex items-center gap-1">
                       <span className="text-gray-500">https://</span>
-                      <TextField placeholder="subdominio" className="max-w-40" type="text" {...field} />
+                      <div className="relative flex-1 max-w-40">
+                        <TextField placeholder="subdominio" type="text" {...field} />
+
+                        {isChecking && (
+                          <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                            <Loader2 className="w-4 h-4 text-gray-500 animate-spin" />
+                          </div>
+                        )}
+
+                        {!isChecking && isAvailable === true && (
+                          <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                            <CheckCircle2 className="w-4 h-4 text-green-500" />
+                          </div>
+                        )}
+
+                        {!isChecking && (isAvailable === false || validationError) && (
+                          <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                            <XCircle className="w-4 h-4 text-red-500" />
+                          </div>
+                        )}
+                      </div>
+
                       <span className="text-gray-500">.{process.env.NEXT_PUBLIC_ROOT_DOMAIN}</span>
                     </div>
                   </FormControl>
+
+                  {!isChecking && isAvailable === false && <FormMessage>Este subdominio ya está en uso</FormMessage>}
+                  {!isChecking && validationError && <FormMessage>{validationError}</FormMessage>}
                 </FormItem>
               )}
             />

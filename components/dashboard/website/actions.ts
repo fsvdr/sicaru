@@ -1,14 +1,17 @@
 'use server';
 
+import db from '@db/index';
+import { websites } from '@db/schema';
 import { getImageUploadPayload, UploadsDAO } from '@lib/dao/UploadsDAO';
 import { WebsiteDAO } from '@lib/dao/WebsiteDAO';
 import { createId } from '@paralleldrive/cuid2';
 import { GenericServerActionResponse } from '@types';
 import { createClient } from '@utils/supabase/server';
 import toJSON from '@utils/toJSON';
+import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { websiteGeneralSchemaSlice, websiteThemeSchemaSlice } from './types';
+import { subdomainSchema, websiteGeneralSchemaSlice, websiteThemeSchemaSlice } from './types';
 
 export type UpdateWebsiteDetailsResponse = GenericServerActionResponse<{
   success: true;
@@ -112,5 +115,47 @@ export const updateWebsiteDetails = async (
 
     revalidatePath('/website');
     return { state: 'SUCCESS', data: { success: true, website } };
+  }
+};
+
+export type VerifySubdomainResponse = GenericServerActionResponse<{
+  isAvailable: boolean;
+}>;
+
+export const verifySubdomainAvailability = async (subdomain: string): Promise<VerifySubdomainResponse> => {
+  try {
+    const { success, error } = subdomainSchema.safeParse(subdomain);
+
+    if (!success) {
+      return {
+        state: 'ERROR',
+        error: {
+          message: 'Invalid subdomain format',
+          data: { errors: error.errors.map((err) => err.message) },
+        },
+      };
+    }
+
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user?.id) return { state: 'ERROR', error: { message: 'Unauthenticated user' } };
+
+    const website = await db.query.websites.findFirst({
+      where: eq(websites.subdomain, subdomain),
+    });
+
+    return {
+      state: 'SUCCESS',
+      data: { isAvailable: !website },
+    };
+  } catch (error) {
+    return {
+      state: 'ERROR',
+      error: { message: 'An unexpected error occurred' },
+    };
   }
 };
