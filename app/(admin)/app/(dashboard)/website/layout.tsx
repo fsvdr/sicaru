@@ -10,7 +10,11 @@ const WebsiteFormLayout = async ({ children }: { children: ReactNode }) => {
 
   if (!website) notFound();
 
-  return <WebsitePreview website={website}>{children}</WebsitePreview>;
+  return (
+    <WebsitePreview activeStore={activeStore} website={website}>
+      {children}
+    </WebsitePreview>
+  );
 };
 
 export default WebsiteFormLayout;

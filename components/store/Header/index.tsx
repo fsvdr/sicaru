@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { FaFacebook, FaInstagram, FaTiktok, FaXTwitter } from 'react-icons/fa6';
 
-const Header = ({ store }: { store: ReturnType<typeof StoreDAO.cleanupStoreFields> }) => {
+const Header = ({ store }: { store: Omit<ReturnType<typeof StoreDAO.cleanupStoreFields>, 'website'> }) => {
   const logo = store.logo ? getPublicUrl(store.logo.url) : undefined;
   const dimensions = store.logo ? store.logo.dimensions : undefined;
 
