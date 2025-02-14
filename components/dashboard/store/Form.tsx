@@ -1,11 +1,10 @@
 'use client';
 
-import { Form, SaveBar } from '@components/generic/Form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { SaveBar } from '@components/generic/Form';
 import { StoreDAO } from '@lib/dao/StoreDAO';
+import { useForm } from '@tanstack/react-form';
 import { useEffect } from 'react';
 import { useFormState } from 'react-dom';
-import { DefaultValues, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { updateStoreDetails } from '../../../app/(admin)/app/(dashboard)/actions';
 import ProfileFieldset from './ProfileFieldset';
@@ -14,9 +13,11 @@ import { storeDetailsSchema } from './types';
 const StoreDetailsForm = ({ store }: { store?: Awaited<ReturnType<typeof StoreDAO.getStore>> }) => {
   const [response, handleSubmit] = useFormState(updateStoreDetails, { state: 'PENDING' });
 
-  const form = useForm<StoreDetailsInput>({
-    resolver: zodResolver(storeDetailsSchema),
+  const form = useForm({
     defaultValues: getFormValuesFromStore(store),
+    validators: {
+      onChange: storeDetailsSchema,
+    },
   });
 
   useEffect(() => {
@@ -24,15 +25,13 @@ const StoreDetailsForm = ({ store }: { store?: Awaited<ReturnType<typeof StoreDA
   }, [store]);
 
   return (
-    <Form {...form}>
-      <form className="flex flex-col gap-8" action={handleSubmit}>
-        <SaveBar />
+    <form className="flex flex-col gap-8" action={handleSubmit}>
+      <SaveBar form={form} />
 
-        <input type="hidden" name="id" value={store?.id ?? ''} />
+      <input type="hidden" name="id" value={store?.id ?? ''} />
 
-        <ProfileFieldset form={form} />
-      </form>
-    </Form>
+      <ProfileFieldset form={form} />
+    </form>
   );
 };
 
@@ -40,9 +39,7 @@ export default StoreDetailsForm;
 
 export type StoreDetailsInput = z.infer<typeof storeDetailsSchema>;
 
-const getFormValuesFromStore = (
-  store: Awaited<ReturnType<typeof StoreDAO.getStore>>
-): DefaultValues<StoreDetailsInput> => {
+const getFormValuesFromStore = (store: Awaited<ReturnType<typeof StoreDAO.getStore>>): StoreDetailsInput => {
   return {
     id: store?.id ?? '',
     name: store?.name ?? '',

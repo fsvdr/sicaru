@@ -3,7 +3,6 @@
 import * as SwitchPrimitives from '@radix-ui/react-switch';
 import cn from '@utils/cn';
 import { ComponentPropsWithoutRef, ElementRef, forwardRef, ReactNode } from 'react';
-import { useFormField } from './Form';
 
 interface SwitchProps extends ComponentPropsWithoutRef<typeof SwitchPrimitives.Root> {
   sendUnchecked?: boolean;
@@ -12,9 +11,7 @@ interface SwitchProps extends ComponentPropsWithoutRef<typeof SwitchPrimitives.R
 }
 
 const Switch = forwardRef<ElementRef<typeof SwitchPrimitives.Root>, SwitchProps>(
-  ({ className, name, checked, sendUnchecked, label, labelPosition = 'right', ...props }, ref) => {
-    const { formFieldId } = useFormField();
-
+  ({ className, name, checked, sendUnchecked, label, labelPosition = 'right', id, ...props }, ref) => {
     return (
       <div className={cn('flex items-center gap-2', labelPosition === 'left' && 'flex-row-reverse')}>
         {sendUnchecked && name && <input type="hidden" name={name} value={checked ? 'true' : 'false'} />}
@@ -27,7 +24,7 @@ const Switch = forwardRef<ElementRef<typeof SwitchPrimitives.Root>, SwitchProps>
           name={sendUnchecked ? undefined : name}
           checked={checked}
           {...props}
-          id={formFieldId}
+          id={id}
           ref={ref}
         >
           <SwitchPrimitives.Thumb
@@ -38,7 +35,7 @@ const Switch = forwardRef<ElementRef<typeof SwitchPrimitives.Root>, SwitchProps>
         </SwitchPrimitives.Root>
 
         {label && (
-          <label htmlFor={formFieldId} className="text-xs text-gray-500 cursor-pointer">
+          <label htmlFor={id} className="text-xs text-gray-500 cursor-pointer">
             {label}
           </label>
         )}

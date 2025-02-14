@@ -2,33 +2,16 @@
 
 import { PageAnnotatedSection } from '@components/dashboard/Page';
 import { useWebsiteForm } from '@components/dashboard/website/WebsiteFormProvider';
-import { useSubdomainAvailability } from '@components/dashboard/website/hooks/useSubdomainAvailability';
+import { verifySubdomainAvailability } from '@components/dashboard/website/actions';
 import { Card, CardContent } from '@components/generic/Card';
-import {
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  TextArea,
-  TextField,
-} from '@components/generic/Form';
+import { FormDescription, FormItem, FormLabel, FormMessage, TextArea, TextField } from '@components/generic/Form';
 import ImageDropZone from '@components/generic/ImageDropZone';
 import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
 
 const WebsiteConfigurationPage = () => {
   const { form } = useWebsiteForm();
 
-  const originalSubdomain = form.formState.defaultValues?.subdomain;
-  const subdomain = form.watch('subdomain');
-
-  const { isChecking, isAvailable, validationError } = useSubdomainAvailability(subdomain, {
-    originalValue: originalSubdomain,
-    setError: form.setError,
-    clearErrors: form.clearErrors,
-    trigger: form.trigger,
-  });
+  const originalSubdomain = form.options.defaultValues?.subdomain;
 
   return (
     <>
@@ -41,67 +24,89 @@ const WebsiteConfigurationPage = () => {
       >
         <Card className="bg-gray-50/50">
           <CardContent className="flex flex-col gap-2 p-4">
-            <pre>{JSON.stringify({ errors: form.formState.errors, isValid: form.formState.isValid }, null, 2)}</pre>
-
-            <FormField
-              control={form.control}
+            <form.Field
               name="subdomain"
-              render={({ field }) => (
+              asyncDebounceMs={500}
+              validators={{
+                onChangeAsync: async ({ value }) => {
+                  if (!value || value === originalSubdomain) return undefined;
+
+                  const response = await verifySubdomainAvailability(value);
+
+                  if (response.state === 'ERROR') return 'No pudimos validar el subdominio, intenta de nuevo más tarde';
+
+                  if (!response.data?.isAvailable) return 'Este subdominio ya está en uso';
+
+                  return undefined;
+                },
+              }}
+              children={(field) => (
                 <FormItem>
-                  <FormLabel>Subdominio Sicaru</FormLabel>
+                  <FormLabel htmlFor={field.name}>Subdominio Sicaru</FormLabel>
                   <FormDescription>
                     Si no cuentas con un dominio propio, puedes utilizar un subdominio de{' '}
                     {process.env.NEXT_PUBLIC_ROOT_DOMAIN}.
                   </FormDescription>
 
-                  <FormControl>
-                    <div className="flex items-center gap-1">
-                      <span className="text-gray-500">https://</span>
-                      <div className="relative flex-1 max-w-40">
-                        <TextField placeholder="subdominio" type="text" {...field} />
+                  <div className="flex items-center gap-1">
+                    <span className="text-gray-500">https://</span>
+                    <div className="relative flex-1 max-w-40">
+                      <TextField
+                        placeholder="subdominio"
+                        type="text"
+                        name={field.name}
+                        value={field.state.value}
+                        onChange={(e) => field.handleChange((e.target as HTMLInputElement).value)}
+                        meta={field.state.meta}
+                        id={field.name}
+                        required
+                      />
 
-                        {isChecking && (
-                          <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                            <Loader2 className="w-4 h-4 text-gray-500 animate-spin" />
-                          </div>
-                        )}
+                      {field.state.meta.isValidating && (
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                          <Loader2 className="w-4 h-4 text-gray-500 animate-spin" />
+                        </div>
+                      )}
 
-                        {!isChecking && isAvailable === true && (
-                          <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                            <CheckCircle2 className="w-4 h-4 text-green-500" />
-                          </div>
-                        )}
+                      {!field.state.meta.isValidating && !field.state.meta.errors.length && (
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                          <CheckCircle2 className="w-4 h-4 text-green-500" />
+                        </div>
+                      )}
 
-                        {!isChecking && (isAvailable === false || validationError) && (
-                          <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                            <XCircle className="w-4 h-4 text-red-500" />
-                          </div>
-                        )}
-                      </div>
-
-                      <span className="text-gray-500">.{process.env.NEXT_PUBLIC_ROOT_DOMAIN}</span>
+                      {!field.state.meta.isValidating && !!field.state.meta.errors.length && (
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                          <XCircle className="w-4 h-4 text-red-500" />
+                        </div>
+                      )}
                     </div>
-                  </FormControl>
 
-                  {!isChecking && isAvailable === false && <FormMessage>Este subdominio ya está en uso</FormMessage>}
-                  {!isChecking && validationError && <FormMessage>{validationError}</FormMessage>}
+                    <span className="text-gray-500">.{process.env.NEXT_PUBLIC_ROOT_DOMAIN}</span>
+                  </div>
+
+                  {!field.state.meta.isValidating && <FormMessage meta={field.state.meta} />}
                 </FormItem>
               )}
             />
 
-            <FormField
-              control={form.control}
+            <form.Field
               name="customDomain"
-              render={({ field }) => (
+              children={(field) => (
                 <FormItem>
-                  <FormLabel>Dominio propio</FormLabel>
+                  <FormLabel htmlFor={field.name}>Dominio propio</FormLabel>
                   <FormDescription>Si ya cuentas con un dominio propio, puedes utilizarlo.</FormDescription>
 
-                  <FormControl>
-                    <div className="flex items-center gap-1">
-                      <TextField placeholder={`https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`} type="url" {...field} />
-                    </div>
-                  </FormControl>
+                  <div className="flex items-center gap-1">
+                    <TextField
+                      placeholder={`https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`}
+                      type="url"
+                      name={field.name}
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange((e.target as HTMLInputElement).value)}
+                      meta={field.state.meta}
+                      id={field.name}
+                    />
+                  </div>
                 </FormItem>
               )}
             />
@@ -112,73 +117,77 @@ const WebsiteConfigurationPage = () => {
       <PageAnnotatedSection compact title="Metadata" description="Información general de tu sitio">
         <Card className="bg-gray-50/50">
           <CardContent className="flex flex-col gap-2 p-4">
-            <FormField
-              control={form.control}
+            <form.Field
               name="favicon"
-              render={({ field }) => (
+              children={(field) => (
                 <FormItem>
-                  <FormLabel>Ícono</FormLabel>
+                  <FormLabel htmlFor={field.name}>Ícono</FormLabel>
                   <FormDescription>Se mostrará como ícono de tu sitio web</FormDescription>
 
-                  <FormControl>
-                    <ImageDropZone
-                      name={field.name}
-                      defaultImageUrl={field.value}
-                      width="120"
-                      height="120"
-                      onChange={(image) => field.onChange(image)}
-                    />
-                  </FormControl>
+                  <ImageDropZone
+                    name={field.name}
+                    defaultImageUrl={field.state.value}
+                    width="120"
+                    height="120"
+                    onChange={(image) => field.handleChange(image)}
+                  />
 
                   <FormMessage>Tamaño recomendado: 320x320px (1:1)</FormMessage>
                 </FormItem>
               )}
             />
 
-            <FormField
-              control={form.control}
+            <form.Field
               name="title"
-              render={({ field }) => (
+              children={(field) => (
                 <FormItem>
-                  <FormLabel>Título</FormLabel>
+                  <FormLabel htmlFor={field.name}>Título</FormLabel>
                   <FormDescription>El título de tu sitio web.</FormDescription>
 
-                  <FormControl>
-                    <TextField placeholder="Título" type="text" {...field} />
-                  </FormControl>
+                  <TextField
+                    placeholder="Título"
+                    type="text"
+                    name={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange((e.target as HTMLInputElement).value)}
+                    meta={field.state.meta}
+                    id={field.name}
+                  />
                 </FormItem>
               )}
             />
 
-            <FormField
-              control={form.control}
+            <form.Field
               name="description"
-              render={({ field }) => (
+              children={(field) => (
                 <FormItem>
-                  <FormLabel>Descripción</FormLabel>
+                  <FormLabel htmlFor={field.name}>Descripción</FormLabel>
 
-                  <FormControl>
-                    <TextArea placeholder="" {...field} />
-                  </FormControl>
+                  <TextArea
+                    placeholder=""
+                    name={field.name}
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange((e.target as HTMLInputElement).value)}
+                    meta={field.state.meta}
+                    id={field.name}
+                  />
                 </FormItem>
               )}
             />
 
-            <FormField
-              control={form.control}
+            <form.Field
               name="coverImage"
-              render={({ field }) => (
+              children={(field) => (
                 <FormItem>
-                  <FormLabel>Imagen de portada</FormLabel>
+                  <FormLabel htmlFor={field.name}>Imagen de portada</FormLabel>
                   <FormDescription>Al compartir tu sitio web, se mostrará esta imagen.</FormDescription>
-                  <FormControl>
-                    <ImageDropZone
-                      name={field.name}
-                      defaultImageUrl={field.value}
-                      className="w-full aspect-video"
-                      onChange={(image) => field.onChange(image)}
-                    />
-                  </FormControl>
+
+                  <ImageDropZone
+                    name={field.name}
+                    defaultImageUrl={field.state.value}
+                    className="w-full aspect-video"
+                    onChange={(image) => field.handleChange(image)}
+                  />
 
                   <FormMessage>Tamaño recomendado: 1080x1080px (1:1) o 1920x1080px (16:9)</FormMessage>
                 </FormItem>

@@ -2,10 +2,10 @@ import { z } from 'zod';
 
 export const subdomainSchema = z
   .string()
-  .min(1, 'El subdominio es requerido')
-  .max(63, 'El subdominio no puede tener más de 63 caracteres')
-  .regex(/^[a-z0-9-]+$/, 'El subdominio solo puede contener letras minúsculas, números y guiones')
-  .regex(/^[a-z0-9].*[a-z0-9]$/, 'El subdominio debe comenzar y terminar con una letra o número')
+  .nonempty('El subdominio es requerido')
+  .max(63, 'No puede tener más de 63 caracteres')
+  .regex(/^[a-z0-9-]+$/, 'Solo puede contener letras minúsculas, números y guiones')
+  .regex(/^[a-z0-9].*[a-z0-9]$/, 'Debe comenzar y terminar con una letra o número')
   .transform((value) => value.toLowerCase());
 
 export const websiteDetailsSchema = z.object({

@@ -1,11 +1,10 @@
 'use client';
 
-import { Form, SaveBar } from '@components/generic/Form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { SaveBar } from '@components/generic/Form';
 import { WebsiteDAO } from '@lib/dao/WebsiteDAO';
+import { useForm } from '@tanstack/react-form';
 import { ReactNode, useEffect } from 'react';
 import { useFormState } from 'react-dom';
-import { DefaultValues, useForm } from 'react-hook-form';
 import { updateWebsiteDetails } from './actions';
 import { websiteDetailsSchema } from './types';
 import WebsiteFormProvider, { WebsiteDetailsInput } from './WebsiteFormProvider';
@@ -19,9 +18,11 @@ const WebsitePreview = ({
 }) => {
   const [response, handleSubmit] = useFormState(updateWebsiteDetails, { state: 'PENDING' });
 
-  const form = useForm<WebsiteDetailsInput>({
-    resolver: zodResolver(websiteDetailsSchema),
+  const form = useForm({
     defaultValues: getDefaultValues(website),
+    validators: {
+      onChange: websiteDetailsSchema,
+    },
   });
 
   useEffect(() => {
@@ -30,16 +31,14 @@ const WebsitePreview = ({
 
   return (
     <div className="flex-1 grid grid-cols-[28rem_1fr]">
-      <Form {...form}>
-        <form className="flex flex-col gap-8 p-4" action={handleSubmit}>
-          <SaveBar />
+      <form className="flex flex-col gap-8 p-4" action={handleSubmit}>
+        <SaveBar form={form} />
 
-          <input type="hidden" name="id" value={website.id} />
-          <input type="hidden" name="storeId" value={website.storeId} />
+        <input type="hidden" name="id" value={website.id} />
+        <input type="hidden" name="storeId" value={website.storeId} />
 
-          <WebsiteFormProvider form={form}>{children}</WebsiteFormProvider>
-        </form>
-      </Form>
+        <WebsiteFormProvider form={form}>{children}</WebsiteFormProvider>
+      </form>
 
       <div className="w-full h-[calc(100vh-1rem)] sticky top-4 left-0 p-4 pt-0 overflow-hidden">
         <div className="w-full h-full bg-gray-500 rounded-xl"></div>
@@ -50,9 +49,7 @@ const WebsitePreview = ({
 
 export default WebsitePreview;
 
-const getDefaultValues = (
-  website: ReturnType<typeof WebsiteDAO.cleanupWebsiteFields>
-): DefaultValues<WebsiteDetailsInput> => {
+const getDefaultValues = (website: ReturnType<typeof WebsiteDAO.cleanupWebsiteFields>): WebsiteDetailsInput => {
   return {
     ...website,
     customDomain: website.customDomain ?? '',

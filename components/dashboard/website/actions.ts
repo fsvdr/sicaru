@@ -92,8 +92,10 @@ export const updateWebsiteDetails = async (
     if (currentWebsite?.coverImage && !sliceFields.coverImage) deletes.push(currentWebsite.coverImage);
     if (currentWebsite?.favicon && !sliceFields.favicon) deletes.push(currentWebsite.favicon);
 
-    console.log('[SC]', { deletes });
     if (deletes.length) await UploadsDAO.deleteImages(deletes);
+
+    // We have a unique constraint on the custom domain, so we need to remove it if it's not provided
+    if (!sliceFields.customDomain) sliceFields.customDomain = undefined;
 
     const website = await WebsiteDAO.updateWebsite({
       storeId: body.storeId,

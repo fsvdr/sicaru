@@ -1,12 +1,12 @@
 'use client';
 
+import { ReactFormExtendedApi } from '@tanstack/react-form';
 import { createContext, ReactNode, useContext } from 'react';
-import { UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
 import { websiteDetailsSchema } from './types';
 
 interface WebsiteFormContextType {
-  form: UseFormReturn<WebsiteDetailsInput>;
+  form: ReactFormExtendedApi<WebsiteDetailsInput>;
 }
 const WebsiteFormContext = createContext<WebsiteFormContextType>({} as WebsiteFormContextType);
 export const useWebsiteForm = () => {
@@ -17,7 +17,13 @@ export const useWebsiteForm = () => {
   return context;
 };
 
-const WebsiteFormProvider = ({ children, form }: { children: ReactNode; form: UseFormReturn<WebsiteDetailsInput> }) => {
+const WebsiteFormProvider = ({
+  children,
+  form,
+}: {
+  children: ReactNode;
+  form: ReactFormExtendedApi<WebsiteDetailsInput>;
+}) => {
   return <WebsiteFormContext.Provider value={{ form }}>{children}</WebsiteFormContext.Provider>;
 };
 

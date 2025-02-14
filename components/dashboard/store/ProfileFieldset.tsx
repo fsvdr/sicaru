@@ -1,256 +1,271 @@
 import Button from '@components/generic/Button';
 import { Card, CardContent } from '@components/generic/Card';
-import {
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  TextArea,
-  TextField,
-} from '@components/generic/Form';
+import { FormDescription, FormItem, FormLabel, FormMessage, TextArea, TextField } from '@components/generic/Form';
 import ImageDropZone from '@components/generic/ImageDropZone';
 import { Switch } from '@components/generic/Switch';
+import { ReactFormExtendedApi } from '@tanstack/react-form';
 import { Trash2 } from 'lucide-react';
-import { UseFormReturn } from 'react-hook-form';
 import { PageAnnotatedSection } from '../Page';
 import { StoreDetailsInput } from './Form';
 
-const ProfileFieldset = ({ form }: { form: UseFormReturn<StoreDetailsInput> }) => {
+const ProfileFieldset = ({ form }: { form: ReactFormExtendedApi<StoreDetailsInput> }) => {
   return (
     <PageAnnotatedSection title="Perfil" description="Configura el perfil de tu negocio">
       <Card className="bg-gray-50/50">
         <CardContent className="flex flex-col gap-2 p-4">
-          <FormField
-            control={form.control}
+          <form.Field
             name="name"
-            render={({ field }) => (
+            children={(field) => (
               <FormItem>
-                <FormLabel>Nombre</FormLabel>
+                <FormLabel htmlFor={field.name}>Nombre</FormLabel>
 
-                <FormControl>
-                  <TextField placeholder="" type="text" {...field} required />
-                </FormControl>
+                <TextField
+                  type="text"
+                  name={field.name}
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange((e.target as HTMLInputElement).value)}
+                  meta={field.state.meta}
+                  id={field.name}
+                  required
+                />
               </FormItem>
             )}
           />
 
-          <FormField
-            control={form.control}
+          <form.Field
             name="category"
-            render={({ field }) => (
+            children={(field) => (
               <FormItem>
-                <FormLabel>Tipo de negocio</FormLabel>
+                <FormLabel htmlFor={field.name}>Tipo de negocio</FormLabel>
 
-                <FormControl>
-                  <TextField placeholder="" type="text" {...field} />
-                </FormControl>
+                <TextField
+                  type="text"
+                  name={field.name}
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange((e.target as HTMLInputElement).value)}
+                  meta={field.state.meta}
+                  id={field.name}
+                  required
+                />
               </FormItem>
             )}
           />
 
-          <FormField
-            control={form.control}
+          <form.Field
             name="tagline"
-            render={({ field }) => (
+            children={(field) => (
               <FormItem>
-                <FormLabel>Slogan</FormLabel>
+                <FormLabel htmlFor={field.name}>Slogan</FormLabel>
                 <FormDescription>Un breve resumen de lo que ofrecen tus productos o servicios.</FormDescription>
 
-                <FormControl>
-                  <TextField placeholder="" type="text" {...field} />
-                </FormControl>
+                <TextField
+                  type="text"
+                  name={field.name}
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange((e.target as HTMLInputElement).value)}
+                  meta={field.state.meta}
+                  id={field.name}
+                  required
+                />
               </FormItem>
             )}
           />
 
-          <FormField
-            control={form.control}
+          <form.Field
             name="bio"
-            render={({ field }) => (
+            children={(field) => (
               <FormItem>
-                <FormLabel>Bio</FormLabel>
+                <FormLabel htmlFor={field.name}>Bio</FormLabel>
 
-                <FormControl>
-                  <TextArea placeholder="" {...field} />
-                </FormControl>
+                <TextArea
+                  name={field.name}
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange((e.target as HTMLInputElement).value)}
+                  meta={field.state.meta}
+                  id={field.name}
+                />
               </FormItem>
             )}
           />
 
-          <FormField
-            control={form.control}
+          <form.Field
             name="logo"
-            render={({ field }) => (
+            children={(field) => (
               <FormItem>
-                <FormLabel>Logo</FormLabel>
+                <FormLabel htmlFor={field.name}>Logo</FormLabel>
                 <FormDescription>
                   Se mostrará en la navegación de tu sitio web y en las previsualizaciones cuando compartas el link a tu
                   sitio
                 </FormDescription>
-                <FormControl>
-                  <ImageDropZone
-                    name={field.name}
-                    defaultImageUrl={field.value}
-                    className="w-full aspect-video"
-                    onChange={(image) => field.onChange(image)}
-                  />
-                </FormControl>
+
+                <ImageDropZone
+                  name={field.name}
+                  defaultImageUrl={field.state.value}
+                  className="w-full aspect-video"
+                  onChange={(image) => field.handleChange(image)}
+                />
 
                 <FormMessage>Tamaño recomendado: 1080x1080px (1:1) o 1920x1080px (16:9)</FormMessage>
               </FormItem>
             )}
           />
 
-          <FormField
-            control={form.control}
+          <form.Field
             name="socialLinks"
-            render={({ field }) => (
+            mode="array"
+            children={(field) => (
               <FormItem>
-                <FormLabel>Links</FormLabel>
+                <FormLabel htmlFor={field.name}>Links</FormLabel>
                 <FormDescription>
                   Agrega los links de tus redes sociales. Intentaremos utilizar el logo de la red social. Si no, se
                   mostrará el título o la URL completa.
                 </FormDescription>
 
-                <FormControl>
-                  <div className="flex flex-col gap-2">
-                    {(!field.value || field.value.length === 0) && (
-                      <input type="hidden" name="socialLinks" value="[]" />
-                    )}
+                <div className="flex flex-col gap-2">
+                  {(!field.state.value || field.state.value.length === 0) && (
+                    <input type="hidden" name="socialLinks" value="[]" />
+                  )}
 
-                    {field.value?.map((_, index) => (
-                      <div key={index} className="flex gap-2">
-                        <FormField
-                          control={form.control}
-                          name={`socialLinks.${index}.url`}
-                          render={({ field }) => (
-                            <TextField placeholder="https://..." type="url" className="flex-1" {...field} required />
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name={`socialLinks.${index}.title`}
-                          render={({ field }) => (
-                            <TextField placeholder="Instagram" type="text" className="w-32" {...field} />
-                          )}
-                        />
+                  {field.state.value?.map((_, index) => (
+                    <div key={index} className="flex gap-2">
+                      <form.Field
+                        name={`socialLinks[${index}].url`}
+                        children={(field) => (
+                          <TextField
+                            placeholder="https://..."
+                            type="url"
+                            name={field.name}
+                            value={field.state.value}
+                            onChange={(e) => field.handleChange((e.target as HTMLInputElement).value)}
+                            className="flex-1"
+                            required
+                          />
+                        )}
+                        key={index}
+                      />
 
-                        <Button
-                          type="button"
-                          aria-label="Eliminar link"
-                          tooltip="Eliminar link"
-                          variant="clear"
-                          onClick={() => {
-                            const currentLinks = form.getValues('socialLinks');
-                            form.setValue(
-                              'socialLinks',
-                              currentLinks.filter((_, i) => i !== index),
-                              { shouldDirty: true }
-                            );
-                          }}
-                        >
-                          <Trash2 className="text-alizarin-crimson-500 size-4" />
-                        </Button>
-                      </div>
-                    ))}
+                      <form.Field
+                        name={`socialLinks[${index}].title`}
+                        children={(field) => (
+                          <TextField
+                            placeholder="Instagram"
+                            type="text"
+                            name={field.name}
+                            value={field.state.value}
+                            onChange={(e) => field.handleChange((e.target as HTMLInputElement).value)}
+                            className="w-32"
+                          />
+                        )}
+                      />
 
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="border-dashed shadow-none enabled:hover:shadow-none"
-                      onClick={() => {
-                        const currentLinks = form.getValues('socialLinks') || [];
-                        form.setValue('socialLinks', [...currentLinks, { url: '', title: '' }], { shouldDirty: true });
-                      }}
-                    >
-                      Agregar link
-                    </Button>
-                  </div>
-                </FormControl>
+                      <Button
+                        type="button"
+                        aria-label="Eliminar link"
+                        tooltip="Eliminar link"
+                        variant="clear"
+                        onClick={() => {
+                          const currentLinks = form.getFieldValue('socialLinks');
+
+                          form.setFieldValue(
+                            'socialLinks',
+                            currentLinks.filter((_, i) => i !== index)
+                          );
+                        }}
+                      >
+                        <Trash2 className="text-alizarin-crimson-500 size-4" />
+                      </Button>
+                    </div>
+                  ))}
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="border-dashed shadow-none enabled:hover:shadow-none"
+                    onClick={() => {
+                      const currentLinks = form.getFieldValue('socialLinks') || [];
+                      form.setFieldValue('socialLinks', [...currentLinks, { url: '', title: '' }]);
+                    }}
+                  >
+                    Agregar link
+                  </Button>
+                </div>
               </FormItem>
             )}
           />
 
-          <FormField
-            control={form.control}
+          <form.Field
             name="features"
-            render={({ field }) => (
+            children={(field) => (
               <FormItem>
                 <FormLabel>Características</FormLabel>
 
-                <FormControl>
-                  <div className="flex flex-col gap-2">
-                    <Switch
-                      name="features.delivery"
-                      checked={field.value.delivery}
-                      sendUnchecked
-                      onCheckedChange={(checked) => {
-                        form.setValue('features', { ...field.value, delivery: checked }, { shouldDirty: true });
-                      }}
-                      label="Cuenta con delivery"
-                    />
-                    <Switch
-                      name="features.reservationsAvailable"
-                      checked={field.value.reservationsAvailable}
-                      sendUnchecked
-                      onCheckedChange={(checked) => {
-                        form.setValue(
-                          'features',
-                          { ...field.value, reservationsAvailable: checked },
-                          { shouldDirty: true }
-                        );
-                      }}
-                      label="Acepta reservaciones"
-                    />
-                    <Switch
-                      name="features.petFriendly"
-                      checked={field.value.petFriendly}
-                      sendUnchecked
-                      onCheckedChange={(checked) => {
-                        form.setValue('features', { ...field.value, petFriendly: checked }, { shouldDirty: true });
-                      }}
-                      label="Es pet friendly"
-                    />
-                    <Switch
-                      name="features.wifi"
-                      checked={field.value.wifi}
-                      sendUnchecked
-                      onCheckedChange={(checked) => {
-                        form.setValue('features', { ...field.value, wifi: checked }, { shouldDirty: true });
-                      }}
-                      label="Cuenta con wifi"
-                    />
-                    <Switch
-                      name="features.veganOptions"
-                      checked={field.value.veganOptions}
-                      sendUnchecked
-                      onCheckedChange={(checked) => {
-                        form.setValue('features', { ...field.value, veganOptions: checked }, { shouldDirty: true });
-                      }}
-                      label="Tiene opciones veganas"
-                    />
-                    <Switch
-                      name="features.vegetarianOptions"
-                      checked={field.value.vegetarianOptions}
-                      sendUnchecked
-                      onCheckedChange={(checked) => {
-                        form.setValue(
-                          'features',
-                          { ...field.value, vegetarianOptions: checked },
-                          { shouldDirty: true }
-                        );
-                      }}
-                      label="Tiene opciones vegetarianas"
-                    />
-                    {/* <Switch
+                <div className="flex flex-col gap-2">
+                  <Switch
+                    name="features.delivery"
+                    checked={field.state.value.delivery}
+                    sendUnchecked
+                    onCheckedChange={(checked) => {
+                      form.setFieldValue('features', { ...field.state.value, delivery: checked });
+                    }}
+                    label="Cuenta con delivery"
+                    id="features-delivery"
+                  />
+                  <Switch
+                    name="features.reservationsAvailable"
+                    checked={field.state.value.reservationsAvailable}
+                    sendUnchecked
+                    onCheckedChange={(checked) => {
+                      form.setFieldValue('features', { ...field.state.value, reservationsAvailable: checked });
+                    }}
+                    label="Acepta reservaciones"
+                    id="features-reservations-available"
+                  />
+                  <Switch
+                    name="features.petFriendly"
+                    checked={field.state.value.petFriendly}
+                    sendUnchecked
+                    onCheckedChange={(checked) => {
+                      form.setFieldValue('features', { ...field.state.value, petFriendly: checked });
+                    }}
+                    label="Es pet friendly"
+                    id="features-pet-friendly"
+                  />
+                  <Switch
+                    name="features.wifi"
+                    checked={field.state.value.wifi}
+                    sendUnchecked
+                    onCheckedChange={(checked) => {
+                      form.setFieldValue('features', { ...field.state.value, wifi: checked });
+                    }}
+                    label="Cuenta con wifi"
+                    id="features-wifi"
+                  />
+                  <Switch
+                    name="features.veganOptions"
+                    checked={field.state.value.veganOptions}
+                    sendUnchecked
+                    onCheckedChange={(checked) => {
+                      form.setFieldValue('features', { ...field.state.value, veganOptions: checked });
+                    }}
+                    label="Tiene opciones veganas"
+                    id="features-vegan-options"
+                  />
+                  <Switch
+                    name="features.vegetarianOptions"
+                    checked={field.state.value.vegetarianOptions}
+                    sendUnchecked
+                    onCheckedChange={(checked) => {
+                      form.setFieldValue('features', { ...field.state.value, vegetarianOptions: checked });
+                    }}
+                    label="Tiene opciones vegetarianas"
+                    id="features-vegetarian-options"
+                  />
+                  {/* <Switch
                       name="features.acceptedPaymentMethods"
-                      checked={field.value.acceptedPaymentMethods}
+                      checked={field.state.value.acceptedPaymentMethods}
                       label="Métodos de pago"
                     /> */}
-                  </div>
-                </FormControl>
+                </div>
               </FormItem>
             )}
           />
