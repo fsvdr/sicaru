@@ -1,8 +1,29 @@
 import db from '@db/index';
 import { websites as websiteTable } from '@db/schema';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, or } from 'drizzle-orm';
+import { StoreDAO } from './StoreDAO';
 
 export class WebsiteDAO {
+  static async getWebsiteByDomain(domain: string) {
+    const subdomain = domain.replace(`.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`, '');
+
+    const match = await db.query.websites.findFirst({
+      where: or(eq(websiteTable.customDomain, domain), eq(websiteTable.subdomain, subdomain)),
+      with: {
+        store: true,
+      },
+    });
+
+    if (!match) return { store: undefined, website: undefined };
+
+    const { store, ...website } = match;
+
+    return {
+      website: this.cleanupWebsiteFields(website),
+      store: StoreDAO.cleanupStoreFields({ ...store, website }),
+    };
+  }
+
   static async updateWebsite({
     storeId,
     websiteId,

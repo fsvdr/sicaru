@@ -91,9 +91,6 @@ const config: Config = {
           foreground: 'hsl(var(--card-foreground))',
         },
       },
-      gridTemplateColumns: {
-        store: '4vw minmax(0, 1fr)',
-      },
       padding: {
         'safe-area-bottom-0': 'max(env(safe-area-inset-bottom), 0)',
         'safe-area-bottom-1': 'max(env(safe-area-inset-bottom), 4px)',
