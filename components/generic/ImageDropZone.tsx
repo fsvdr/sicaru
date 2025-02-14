@@ -1,3 +1,4 @@
+import { ImageMetadata } from '@types';
 import cn from '@utils/cn';
 import { getPublicUrl } from '@utils/getPublicUrl';
 import { UploadCloud, X } from 'lucide-react';
@@ -7,13 +8,13 @@ interface ImageDropZoneProps {
   name: string;
   width?: string;
   height?: string;
-  defaultImageUrl?: string;
+  defaultImageUrl: string | ImageMetadata | null;
   className?: string;
-  onChange: (image?: string) => void;
+  onChange: (image: string | null) => void;
 }
 
 const ImageDropZone = ({ name, width, height, defaultImageUrl, className, onChange }: ImageDropZoneProps) => {
-  const [image, setImage] = useState<string | undefined>(defaultImageUrl);
+  const [image, setImage] = useState<string | ImageMetadata | null>(defaultImageUrl);
 
   const [isDragging, setIsDragging] = useState(false);
 
@@ -56,9 +57,17 @@ const ImageDropZone = ({ name, width, height, defaultImageUrl, className, onChan
   };
 
   const handleRemove = () => {
-    setImage(undefined);
-    onChange(undefined);
+    setImage(null);
+    onChange(null);
   };
+
+  const imageUrl = image
+    ? typeof image === 'string'
+      ? image.startsWith('data:image/')
+        ? image
+        : getPublicUrl(image)
+      : getPublicUrl(image.url)
+    : undefined;
 
   return (
     <div
@@ -83,15 +92,11 @@ const ImageDropZone = ({ name, width, height, defaultImageUrl, className, onChan
         aria-label="Upload image"
       />
 
-      <input type="hidden" name={name} value={image ?? ''} />
+      <input type="hidden" name={name} value={typeof image === 'string' ? image : image?.url ?? ''} />
 
-      {image ? (
+      {imageUrl ? (
         <>
-          <img
-            src={image.startsWith('data:image/') ? image : getPublicUrl(image)}
-            alt="Uploaded preview"
-            className="object-cover w-full h-full rounded-lg"
-          />
+          <img src={imageUrl} alt="Uploaded preview" className="object-cover w-full h-full rounded-lg" />
 
           <div className="absolute right-1 top-1">
             <button onClick={handleRemove} className="p-1 rounded bg-melrose-100" aria-label="Remove image">

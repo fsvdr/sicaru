@@ -16,7 +16,7 @@ import StoreSwitcherDropdown from './Dropdown';
 const StoreSwitcher = async () => {
   const { activeStore, stores } = await resolveActiveStore();
 
-  const faviconUrl = getPublicUrl(activeStore?.website.favicon ?? undefined);
+  const faviconUrl = activeStore?.website.favicon ? getPublicUrl(activeStore.website.favicon.url) : undefined;
 
   return (
     <SidebarMenu>
@@ -59,24 +59,29 @@ const StoreSwitcher = async () => {
           <StoreSwitcherDropdown>
             <DropdownMenuLabel>Mis tiendas</DropdownMenuLabel>
 
-            {stores.map((store) => (
-              <DropdownMenuItem key={store.id}>
-                <div className="flex items-center justify-center overflow-hidden border rounded-md size-6">
-                  {store.website.favicon && (
-                    <Image
-                      src={store.website.favicon}
-                      alt={store.name}
-                      width={24}
-                      height={24}
-                      className="size-6 shrink-0"
-                    />
-                  )}
-                  {!store.website.favicon && <span>{store.name[0]}</span>}
-                </div>
+            {stores.map((store) => {
+              const storeFaviconUrl = store.website.favicon ? getPublicUrl(store.website.favicon.url) : undefined;
 
-                {store.name}
-              </DropdownMenuItem>
-            ))}
+              return (
+                <DropdownMenuItem key={store.id}>
+                  <div className="flex items-center justify-center overflow-hidden border rounded-md size-6">
+                    {storeFaviconUrl ? (
+                      <Image
+                        src={storeFaviconUrl}
+                        alt={store.name}
+                        width={24}
+                        height={24}
+                        className="size-6 shrink-0"
+                      />
+                    ) : (
+                      <span>{store.name[0]}</span>
+                    )}
+                  </div>
+
+                  {store.name}
+                </DropdownMenuItem>
+              );
+            })}
 
             <DropdownMenuSeparator />
 

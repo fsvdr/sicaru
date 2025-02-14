@@ -46,7 +46,7 @@ const getFormValuesFromStore = (store: Awaited<ReturnType<typeof StoreDAO.getSto
     category: store?.category ?? '',
     tagline: store?.tagline ?? '',
     bio: store?.bio ?? '',
-    logo: store?.logo ?? '',
+    logo: store?.logo ?? null,
     socialLinks: store?.socialLinks ?? [],
     features: store?.features ?? {},
   };

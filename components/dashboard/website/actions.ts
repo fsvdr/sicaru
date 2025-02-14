@@ -51,9 +51,7 @@ export const updateWebsiteDetails = async (
     const sliceFields = fields as z.infer<typeof websiteGeneralSchemaSlice>;
     const currentWebsite = await WebsiteDAO.getWebsiteImages(body.id);
 
-    if (sliceFields.coverImage?.startsWith('data:image/')) {
-      const id = createId();
-
+    if (typeof sliceFields.coverImage === 'string' && sliceFields.coverImage.startsWith('data:image/')) {
       uploads.push(
         getImageUploadPayload({
           bucket: user.id,
@@ -64,9 +62,7 @@ export const updateWebsiteDetails = async (
       );
     }
 
-    if (sliceFields.favicon?.startsWith('data:image/')) {
-      const id = createId();
-
+    if (typeof sliceFields.favicon === 'string' && sliceFields.favicon.startsWith('data:image/')) {
       uploads.push(
         getImageUploadPayload({
           bucket: user.id,
@@ -80,27 +76,53 @@ export const updateWebsiteDetails = async (
     if (uploads.length) {
       const uploaded = await UploadsDAO.uploadImages(uploads);
 
-      if (uploaded.coverImage) sliceFields.coverImage = uploaded.coverImage;
-      if (uploaded.favicon) sliceFields.favicon = uploaded.favicon;
+      if (uploaded.coverImage) {
+        sliceFields.coverImage = {
+          url: uploaded.coverImage.url,
+          dimensions: {
+            width: uploaded.coverImage.dimensions.width!,
+            height: uploaded.coverImage.dimensions.height!,
+            aspectRatio: uploaded.coverImage.dimensions.aspectRatio!,
+          },
+        };
+      }
+
+      if (uploaded.favicon) {
+        sliceFields.favicon = {
+          url: uploaded.favicon.url,
+          dimensions: {
+            width: uploaded.favicon.dimensions.width!,
+            height: uploaded.favicon.dimensions.height!,
+            aspectRatio: uploaded.favicon.dimensions.aspectRatio!,
+          },
+        };
+      }
 
       // Replacing images, delete old images
-      if (currentWebsite?.coverImage && uploaded.coverImage) deletes.push(currentWebsite.coverImage);
-      if (currentWebsite?.favicon && uploaded.favicon) deletes.push(currentWebsite.favicon);
+      if (currentWebsite?.coverImage && uploaded.coverImage) deletes.push(currentWebsite.coverImage.url);
+      if (currentWebsite?.favicon && uploaded.favicon) deletes.push(currentWebsite.favicon.url);
     }
 
     // Removing images
-    if (currentWebsite?.coverImage && !sliceFields.coverImage) deletes.push(currentWebsite.coverImage);
-    if (currentWebsite?.favicon && !sliceFields.favicon) deletes.push(currentWebsite.favicon);
+    if (currentWebsite?.coverImage && !sliceFields.coverImage) deletes.push(currentWebsite.coverImage.url);
+    if (currentWebsite?.favicon && !sliceFields.favicon) deletes.push(currentWebsite.favicon.url);
 
     if (deletes.length) await UploadsDAO.deleteImages(deletes);
 
     // We have a unique constraint on the custom domain, so we need to remove it if it's not provided
     if (!sliceFields.customDomain) sliceFields.customDomain = undefined;
 
+    // Convert fields to match database types
+    const websiteFields = {
+      ...sliceFields,
+      coverImage: sliceFields.coverImage && typeof sliceFields.coverImage === 'object' ? sliceFields.coverImage : null,
+      favicon: sliceFields.favicon && typeof sliceFields.favicon === 'object' ? sliceFields.favicon : null,
+    };
+
     const website = await WebsiteDAO.updateWebsite({
       storeId: body.storeId,
       websiteId: body.id,
-      fields: sliceFields,
+      fields: websiteFields,
     });
 
     if (!website) return { state: 'ERROR', error: { message: 'Failed to update website details' } };

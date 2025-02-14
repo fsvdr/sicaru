@@ -1,4 +1,5 @@
 import { createClient } from '@utils/supabase/server';
+import sharp from 'sharp';
 
 export class UploadsDAO {
   static async uploadImages(images: ImageUploadPayload[]) {
@@ -7,6 +8,14 @@ export class UploadsDAO {
     const uploads = images.map(async (image) => {
       const buffer = Buffer.from(image.file, 'base64');
       const filename = `${image.bucket}/${image.fileName}.${image.fileType.split('/')[1]}`;
+
+      // Get image dimensions before upload
+      const metadata = await sharp(buffer).metadata();
+      const dimensions = {
+        width: metadata.width,
+        height: metadata.height,
+        aspectRatio: metadata.width && metadata.height ? metadata.width / metadata.height : null,
+      };
 
       const { error } = await supabase.storage.from('assets').upload(filename, buffer, {
         contentType: image.fileType,
@@ -21,6 +30,7 @@ export class UploadsDAO {
       return {
         id: image.id,
         url: filename,
+        dimensions,
       };
     });
 
@@ -29,9 +39,12 @@ export class UploadsDAO {
     return urls
       .filter((url) => url !== null)
       .reduce((acc, image) => {
-        acc[image.id] = image.url;
+        acc[image.id] = {
+          url: image.url,
+          dimensions: image.dimensions,
+        };
         return acc;
-      }, {} as { [name: string]: string });
+      }, {} as { [name: string]: { url: string; dimensions: ImageDimensions } });
   }
 
   static async deleteImages(filenames: string[]) {
@@ -49,6 +62,12 @@ type ImageUploadPayload = {
   file: string;
   fileName: string;
   fileType: string;
+};
+
+type ImageDimensions = {
+  width: number | undefined;
+  height: number | undefined;
+  aspectRatio: number | null;
 };
 
 export const getImageUploadPayload = ({

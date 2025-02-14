@@ -55,7 +55,7 @@ const getDefaultValues = (website: ReturnType<typeof WebsiteDAO.cleanupWebsiteFi
     customDomain: website.customDomain ?? '',
     title: website.title ?? '',
     description: website.description ?? '',
-    coverImage: website.coverImage ?? '',
-    favicon: website.favicon ?? '',
+    coverImage: website.coverImage ? website.coverImage.url : null,
+    favicon: website.favicon ? website.favicon.url : null,
   };
 };

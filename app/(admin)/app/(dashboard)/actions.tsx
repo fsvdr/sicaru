@@ -35,32 +35,42 @@ export const updateStoreDetails = async (
 
   const { id, ...fields } = data;
 
-  const storeFields: Omit<typeof stores.$inferInsert, 'id' | 'userId'> = {
-    ...fields,
-  };
-
   const currentStore = id ? await StoreDAO.getStore({ userId: user.id, storeId: id }) : null;
 
   const uploads = [];
   const deletes = [];
 
-  if (fields.logo?.startsWith('data:image/'))
+  if (typeof fields.logo === 'string' && fields.logo.startsWith('data:image/'))
     uploads.push(getImageUploadPayload({ bucket: user.id, id: 'logo', fileName: createId(), file: fields.logo }));
 
   if (uploads.length) {
     const uploaded = await UploadsDAO.uploadImages(uploads);
 
-    if (uploaded.logo) storeFields.logo = uploaded.logo;
+    if (uploaded.logo) {
+      fields.logo = {
+        url: uploaded.logo.url,
+        dimensions: {
+          width: uploaded.logo.dimensions.width!,
+          height: uploaded.logo.dimensions.height!,
+          aspectRatio: uploaded.logo.dimensions.aspectRatio!,
+        },
+      };
+    }
 
     // Replacing images, delete old images
-    if (currentStore?.logo && uploaded.logo) deletes.push(currentStore.logo);
+    if (currentStore?.logo && uploaded.logo) deletes.push(currentStore.logo.url);
   }
 
   // Removing images
-  if (currentStore?.logo && !fields.logo) deletes.push(currentStore.logo);
+  if (currentStore?.logo && !fields.logo) deletes.push(currentStore.logo.url);
 
-  console.log('[SC]', { deletes });
   if (deletes.length) await UploadsDAO.deleteImages(deletes);
+
+  // Convert fields to match database types
+  const storeFields: Omit<typeof stores.$inferInsert, 'id' | 'userId'> = {
+    ...fields,
+    logo: fields.logo && typeof fields.logo === 'object' ? fields.logo : null,
+  };
 
   const store = !id
     ? await StoreDAO.createStore({ userId: user.id!, fields: storeFields })

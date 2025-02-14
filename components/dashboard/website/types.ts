@@ -8,6 +8,15 @@ export const subdomainSchema = z
   .regex(/^[a-z0-9].*[a-z0-9]$/, 'Debe comenzar y terminar con una letra o número')
   .transform((value) => value.toLowerCase());
 
+const imageMetadataSchema = z.object({
+  url: z.string(),
+  dimensions: z.object({
+    width: z.number(),
+    height: z.number(),
+    aspectRatio: z.number(),
+  }),
+});
+
 export const websiteDetailsSchema = z.object({
   id: z.string(),
   storeId: z.string(),
@@ -15,8 +24,8 @@ export const websiteDetailsSchema = z.object({
   customDomain: z.string().optional(),
   title: z.string().optional(),
   description: z.string().optional(),
-  coverImage: z.string().optional(),
-  favicon: z.string().optional(),
+  coverImage: z.union([z.string(), imageMetadataSchema]).nullable(),
+  favicon: z.union([z.string(), imageMetadataSchema]).nullable(),
   template: z.string(),
 });
 

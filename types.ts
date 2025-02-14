@@ -31,6 +31,15 @@ export type GenericServerActionResponse<T> =
 
 export type Database = ReturnType<typeof createClient>;
 
+export type ImageMetadata = {
+  url: string;
+  dimensions: {
+    width: number;
+    height: number;
+    aspectRatio: number;
+  };
+};
+
 export type StoreSocialLink = {
   url: string;
   title?: string;

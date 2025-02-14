@@ -1,6 +1,6 @@
 import { timestamps } from '@db/utils';
 import { createId } from '@paralleldrive/cuid2';
-import { StoreFeatures, StoreSocialLink } from '@types';
+import { ImageMetadata, StoreFeatures, StoreSocialLink } from '@types';
 import { relations } from 'drizzle-orm';
 import { index, json, pgTable, text, uuid } from 'drizzle-orm/pg-core';
 import { websites } from './websites';
@@ -16,7 +16,7 @@ export const stores = pgTable(
     category: text('category'),
     tagline: text('tagline'),
     bio: text('bio'),
-    logo: text('logo'),
+    logo: json('logo').$type<ImageMetadata | null>(),
     socialLinks: json('social_links').$type<StoreSocialLink[]>().default([]),
     features: json('features').$type<StoreFeatures>().default({}),
     ...timestamps,

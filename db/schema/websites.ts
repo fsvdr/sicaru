@@ -1,6 +1,6 @@
 import { timestamps } from '@db/utils';
 import { createId } from '@paralleldrive/cuid2';
-import { WebsiteTemplate } from '@types';
+import { ImageMetadata, WebsiteTemplate } from '@types';
 import { relations } from 'drizzle-orm';
 import { json, pgTable, text, uniqueIndex } from 'drizzle-orm/pg-core';
 import { stores } from './stores';
@@ -19,8 +19,8 @@ export const websites = pgTable(
     customDomain: text('custom_domain'),
     title: text('title'),
     description: text('description'),
-    coverImage: text('cover_image'),
-    favicon: text('favicon'),
+    coverImage: json('cover_image').$type<ImageMetadata | null>(),
+    favicon: json('favicon').$type<ImageMetadata | null>(),
     template: text('template').notNull(),
     configuration: json('configuration').$type<WebsiteTemplate>(),
     ...timestamps,
